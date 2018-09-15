@@ -1,5 +1,6 @@
 #include "logger.h"
 #include "logstream.h"
+#include "asynclogger.h"
 
 // ------------------------------------start
 // 初始化日志等级
@@ -35,8 +36,25 @@ void DefaultFlush()
     fflush(stdout);
 }
 
+static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static AsyncLogger *asynclogger;
+
+std::string Logger::log_file_name_ = "./sinetlib.log";
+
+void OnceInit()
+{
+    asynclogger = new AsyncLogger(Logger::GetLogFileName());
+    asynclogger->Start();
+}
+
+void AsyncOutput(const char* str, int len)
+{
+    pthread_once(&once_control, OnceInit);
+    asynclogger->Append(str, len);
+}
+
 // 全局变量：输出函数
-Logger::OutputFunc g_output = DefaultOutput;
+Logger::OutputFunc g_output = AsyncOutput;
 // 全局变量：冲刷函数
 Logger::FlushFunc  g_flush  = DefaultFlush;
 

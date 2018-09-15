@@ -4,6 +4,10 @@
 #include <string.h>
 #include <string>
 
+// 缓冲区大小
+const int SMALL_BUFFER_SIZE = 1024;
+const int LARGE_BUFFER_SIZE = 1024 * 1000;
+
 // 缓冲区模板类，用以存放日志数据
 // 大小为存放SIZE个char类型的数组
 template<int SIZE>
@@ -23,6 +27,10 @@ public:
     }
     // 添加数据完成后更新cur指针位置
     void AppendComplete(size_t len) { cur_ += len; }
+    // 清空数据
+    void Bzero() { bzero(data_, sizeof(data_)); }
+    // 重置数据
+    void Reset() { cur_ = data_; }
 
     // 获取数据
     const char* GetData() const { return data_; }
@@ -44,14 +52,12 @@ private:
 };
 
 
-// 缓冲区大小
-const int BUFFER_SIZE = 1024;
 // 日志流对象
 class LogStream
 {
 public:
     // 固定大小缓冲区
-    typedef Buffer<BUFFER_SIZE> FixedBuffer;
+    typedef Buffer<SMALL_BUFFER_SIZE> FixedBuffer;
 
     // 流输出操作符
     LogStream& operator<<(bool);

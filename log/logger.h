@@ -22,9 +22,10 @@ public:
     ~Logger();
 
     // 获取日志流对象
-    LogStream&      GetStream() { return stream_; }
+    LogStream&         GetStream() { return stream_; }
     // 获取全局日志等级，并非当前对象的等级
-    static LogLevel GetGlobalLogLevel();
+    static LogLevel    GetGlobalLogLevel();
+    static std::string GetLogFileName() { return log_file_name_; }
 
     typedef void (*OutputFunc)(const char* msg, int len);
     typedef void (*FlushFunc)();
@@ -42,6 +43,8 @@ private:
     const char* file_name_; 
     // 行数
     int line_;
+
+    static std::string log_file_name_;
 };
 
 // FIXME: 声明为内联函数或许可提高性能

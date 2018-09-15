@@ -5,7 +5,9 @@
 AppendFile::AppendFile(const std::string& file_name)
     : fp_(fopen(file_name.c_str(), "ae"))
 {
+    printf("%s\n", "111");
     setbuffer(fp_, buffer_, sizeof(buffer_));
+    printf("%s\n", "222");
 }
 
 // 析构函数，关闭打开的文件
