@@ -1,4 +1,5 @@
 #include "logger.h"
+#include <unistd.h>
 
 int main()
 {
@@ -6,4 +7,6 @@ int main()
 	LOG_DEBUG << "debug";
 	LOG_ERROR << "error";
 	LOG_INFO << 122;
+	sleep(5);
+
 }
