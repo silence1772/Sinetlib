@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "logstream.h"
 #include "asynclogger.h"
+#include <pthread.h>
 
 // ------------------------------------start
 // 初始化日志等级
