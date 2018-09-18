@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libSinetlib.a  CMakeFiles/Sinetlib_static.dir/src/log/logfile.cpp.o CMakeFiles/Sinetlib_static.dir/src/log/logstream.cpp.o CMakeFiles/Sinetlib_static.dir/src/log/asynclogger.cpp.o CMakeFiles/Sinetlib_static.dir/src/log/logger.cpp.o CMakeFiles/Sinetlib_static.dir/src/log/fileutil.cpp.o
-/usr/bin/ranlib lib/libSinetlib.a
