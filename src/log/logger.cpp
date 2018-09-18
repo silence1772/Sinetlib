@@ -28,7 +28,7 @@ Logger::LogLevel Logger::GetGlobalLogLevel()
 // 默认输出函数，输出至标准输出
 void DefaultOutput(const char* msg, int len)
 {
-    size_t n = fwrite(msg, 1, len, stdout);
+    fwrite(msg, 1, len, stdout);
 }
 
 // 默认冲刷函数，冲刷标准输出流
@@ -86,9 +86,10 @@ const char* g_loglevel_name[Logger::NUM_LOG_LEVELS] =
 
 // 构造函数，预输出默认信息
 Logger::Logger(const char* file_name, int line, LogLevel level, const char* func_name)
-    : file_name_(file_name),
-      line_(line),
-      level_(level)
+    : stream_(),
+      level_(level),
+      file_name_(file_name),
+      line_(line)
 {
     stream_ << g_loglevel_name[level_] << func_name << "():";
 }

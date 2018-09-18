@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/test_asynclogger.dir/test_asynclogger.cpp.o  -o ../bin/test_asynclogger -rdynamic ../lib/libSinetlib.so -lpthread -Wl,-rpath,/home/silence/mys/Sinetlib/build/lib 

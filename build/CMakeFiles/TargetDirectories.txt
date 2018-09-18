@@ -1,0 +1,15 @@
+/home/silence/mys/Sinetlib/build/CMakeFiles/install.dir
+/home/silence/mys/Sinetlib/build/CMakeFiles/list_install_components.dir
+/home/silence/mys/Sinetlib/build/CMakeFiles/rebuild_cache.dir
+/home/silence/mys/Sinetlib/build/CMakeFiles/edit_cache.dir
+/home/silence/mys/Sinetlib/build/CMakeFiles/Sinetlib_shared.dir
+/home/silence/mys/Sinetlib/build/CMakeFiles/Sinetlib_static.dir
+/home/silence/mys/Sinetlib/build/CMakeFiles/install/strip.dir
+/home/silence/mys/Sinetlib/build/CMakeFiles/install/local.dir
+/home/silence/mys/Sinetlib/build/test/CMakeFiles/install.dir
+/home/silence/mys/Sinetlib/build/test/CMakeFiles/list_install_components.dir
+/home/silence/mys/Sinetlib/build/test/CMakeFiles/rebuild_cache.dir
+/home/silence/mys/Sinetlib/build/test/CMakeFiles/test_asynclogger.dir
+/home/silence/mys/Sinetlib/build/test/CMakeFiles/install/strip.dir
+/home/silence/mys/Sinetlib/build/test/CMakeFiles/install/local.dir
+/home/silence/mys/Sinetlib/build/test/CMakeFiles/edit_cache.dir
