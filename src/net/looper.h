@@ -17,19 +17,27 @@ public:
     Looper();
     ~Looper();
     
+    // 开始事件循环
     void Start();
+    // 退出循环
     void Quit() { quit_ = true; }
+
+    // 注册事件
+    void AddEventBase(std::shared_ptr<EventBase> eventbase);
+
     void RunTask(Task&& task);
     void AddTask(Task&& task);
 
-    void AddEventBase(std::shared_ptr<EventBase> eventbase);
+    
 private:
     bool quit_;
     std::unique_ptr<Epoller> epoller_;
+
+    // 注册的事件列表
+    std::vector<std::shared_ptr<EventBase>> eventbase_list_;
+
     std::mutex mutex_;
     std::vector<Task> task_queue_;
-    std::vector<std::shared_ptr<EventBase>> eventbase_list_;
-    
 };
 
 #endif // LOOPER_h

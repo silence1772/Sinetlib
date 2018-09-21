@@ -27,7 +27,7 @@ int main()
 
     std::shared_ptr<EventBase> eventbase = std::make_shared<EventBase>(timerfd);
     eventbase->SetReadCallback(timeout);
-    eventbase->SetReadEvents((EPOLLIN | EPOLLPRI));
+    eventbase->EnableReadEvents();
     loop.AddEventBase(eventbase);
 
     struct itimerspec howlong;
