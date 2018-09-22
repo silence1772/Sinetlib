@@ -13,9 +13,19 @@ void EventBase::EnableReadEvents()
     events_ |= (EPOLLIN | EPOLLPRI);
 }
 
+void EventBase::EnableReadEventsET()
+{
+    events_ |= (EPOLLIN | EPOLLPRI | EPOLLET);
+}
+
 void EventBase::EnableWriteEvents()
 {
     events_ |= EPOLLOUT;
+}
+
+void EventBase::EnableWriteEventsET()
+{
+    events_ |= (EPOLLOUT | EPOLLET);
 }
 
 void EventBase::HandleEvent()

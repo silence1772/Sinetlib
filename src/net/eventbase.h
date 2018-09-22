@@ -16,8 +16,10 @@ public:
 
     // 关注可读事件
     void EnableReadEvents();
+    void EnableReadEventsET();
     // 关注可写事件
     void EnableWriteEvents();
+    void EnableWriteEventsET();
 
     // 设置相应的事件处理函数
     void SetReadCallback(Callback&& read_callback) { read_callback_ = read_callback; }
