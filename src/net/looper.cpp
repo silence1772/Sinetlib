@@ -1,12 +1,21 @@
 #include "looper.h"
 #include "eventbase.h"
 #include "epoller.h"
-
+#include <sys/eventfd.h>
+#include <unistd.h>
 
 Looper::Looper() :
     quit_(false),
+    is_handle_task_(false),
+    wakeup_fd_(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)),
+    wakeup_eventbase_(std::make_shared<EventBase>(wakeup_fd_)),
+    thread_id_(CurrentThread::GetTid()),
     epoller_(new Epoller())
-{}
+{
+    wakeup_eventbase_->SetReadCallback(std::bind(&Looper::HandleWakeUp, this));
+    wakeup_eventbase_->EnableReadEvents();
+    AddEventBase(wakeup_eventbase_);
+}
 
 Looper::~Looper() {}
 
@@ -23,6 +32,7 @@ void Looper::Start()
         {
             it->HandleEvent();
         }
+        HandleTask();
     }
 }
 
@@ -33,15 +43,56 @@ void Looper::AddEventBase(std::shared_ptr<EventBase> eventbase)
     epoller_->Add(eventbase);
 }
 
+void Looper::WakeUp()
+{
+    uint64_t one = 1;
+    ssize_t n = write(wakeup_fd_, &one, sizeof(one));
+    if (n != sizeof(one))
+    {
+        //LOG_SYSERR << "write error";
+    }
+}
+void Looper::HandleWakeUp()
+{
+    uint64_t one = 1;
+    ssize_t n = read(wakeup_fd_, &one, sizeof(one));
+    if (n != sizeof(one))
+    {
+        //LOG_SYSERR << "read error";
+    }
+}
+
 void Looper::RunTask(Task&& task)
 {
-    task();
+    if (IsInBaseThread())
+        task();
+    else
+        AddTask(std::move(task));
 }
 
 void Looper::AddTask(Task&& task)
 {
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        task_queue_.push_back(task);
+        task_queue_.emplace_back(std::move(task));
     }
+    if (!IsInBaseThread() || is_handle_task_)
+    {
+        WakeUp();
+    }
+}
+
+void Looper::HandleTask()
+{
+    is_handle_task_ = true;
+    std::vector<Task> tasks;
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        tasks.swap(task_queue_);
+    }
+    for (auto i = 0; i < tasks.size(); ++i)
+    {
+        tasks[i]();
+    }
+    is_handle_task_ = false;
 }
