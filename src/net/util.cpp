@@ -78,3 +78,9 @@ void util::Close(int sockfd)
         //LOG_SYSERR << "Close error";
     }
 }
+
+void util::SetReuseAddr(int sockfd)
+{
+    int optval = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+}

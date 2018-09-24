@@ -14,17 +14,16 @@ public:
     EventBase(int fd);
     ~EventBase();
 
-    // 关注可读事件
-    void EnableReadEvents();
-    void EnableReadEventsET();
-    // 关注可写事件
-    void EnableWriteEvents();
-    void EnableWriteEventsET();
+    void EnableEdgeTriggered() { events_ |= EPOLLET; }
+    void EnableReadEvents() { events_ |= (EPOLLIN | EPOLLPRI); }
+    void EnableWriteEvents() { events_ |= EPOLLOUT; }
+    void EnableCloseEvents() { events_ |= EPOLLRDHUP; }
 
     // 设置相应的事件处理函数
-    void SetReadCallback(Callback&& read_callback) { read_callback_ = read_callback; }
-    void SetWriteCallback(Callback&& write_callback) { write_callback_ = write_callback; }
-    void SetErrorCallback(Callback&& error_callback) { error_callback_ = error_callback; }
+    void SetReadCallback(Callback&& cb) { read_callback_ = cb; }
+    void SetWriteCallback(Callback&& cb) { write_callback_ = cb; }
+    void SetErrorCallback(Callback&& cb) { error_callback_ = cb; }
+    void SetCloseCallback(Callback&& cb) { close_callback_ = cb; }
 
     // 设置返回的事件
     void SetRevents(int revents) { revents_ = revents; }
@@ -48,6 +47,7 @@ private:
     Callback read_callback_;
     Callback write_callback_;
     Callback error_callback_;
+    Callback close_callback_;
 };
 
 #endif // EVENTBASE_H

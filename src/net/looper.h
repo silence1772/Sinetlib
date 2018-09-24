@@ -25,6 +25,7 @@ public:
 
     // 注册事件
     void AddEventBase(std::shared_ptr<EventBase> eventbase);
+    void DelEventBase(std::shared_ptr<EventBase> eventbase);
 
     void WakeUp();
     void HandleWakeUp();
@@ -44,7 +45,7 @@ private:
     std::unique_ptr<Epoller> epoller_;
 
     // 注册的事件列表
-    std::vector<std::shared_ptr<EventBase>> eventbase_list_;
+    //std::vector<std::shared_ptr<EventBase>> eventbase_list_;
 
     std::mutex mutex_;
     std::vector<Task> task_queue_;

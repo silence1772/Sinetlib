@@ -39,8 +39,13 @@ void Looper::Start()
 // 注册事件
 void Looper::AddEventBase(std::shared_ptr<EventBase> eventbase)
 {
-    eventbase_list_.push_back(eventbase);
+    //eventbase_list_.push_back(eventbase);
     epoller_->Add(eventbase);
+}
+
+void Looper::DelEventBase(std::shared_ptr<EventBase> eventbase)
+{
+    epoller_->Del(eventbase);
 }
 
 void Looper::WakeUp()

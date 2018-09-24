@@ -1,4 +1,5 @@
 #include "eventbase.h"
+#include <iostream>
 
 EventBase::EventBase(int fd) : 
     fd_(fd),
@@ -8,29 +9,9 @@ EventBase::EventBase(int fd) :
 
 EventBase::~EventBase() {}
 
-void EventBase::EnableReadEvents()
-{
-    events_ |= (EPOLLIN | EPOLLPRI);
-}
-
-void EventBase::EnableReadEventsET()
-{
-    events_ |= (EPOLLIN | EPOLLPRI | EPOLLET);
-}
-
-void EventBase::EnableWriteEvents()
-{
-    events_ |= EPOLLOUT;
-}
-
-void EventBase::EnableWriteEventsET()
-{
-    events_ |= (EPOLLOUT | EPOLLET);
-}
-
 void EventBase::HandleEvent()
 {
-    // 挂起事件
+    // 服务器端发生异常
     if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN))
     {
         return;
@@ -40,6 +21,13 @@ void EventBase::HandleEvent()
     {
         if (error_callback_)
             error_callback_();
+        return;
+    }
+    // 客户端关闭连接
+    if (revents_ & EPOLLRDHUP)
+    {
+        if (close_callback_)
+            close_callback_();
         return;
     }
     // 可读事件

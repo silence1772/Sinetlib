@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "currentthread.h"
+#include "util.h"
 
 // epoll_wait最多监听事件数
 const int EVENTS_NUM = 4096;
@@ -17,7 +18,10 @@ Epoller::Epoller() :
     //assert(epollfd_ > 0);
 }
 
-Epoller::~Epoller() {}
+Epoller::~Epoller() 
+{
+    util::Close(epollfd_);
+}
 
 // 往epoll的事件表上注册事件
 void Epoller::Add(std::shared_ptr<EventBase> eventbase)
@@ -35,7 +39,8 @@ void Epoller::Add(std::shared_ptr<EventBase> eventbase)
     {
         perror("Epoller::Add() error");
         // 注册失败，从映射表中清除
-        fd_2_eventbase_list_[fd].reset();
+        //fd_2_eventbase_list_[fd].reset();
+        fd_2_eventbase_list_.erase(fd);
     }
 }
 
@@ -50,7 +55,8 @@ void Epoller::Mod(std::shared_ptr<EventBase> eventbase)
     if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &event) < 0)
     {
         perror("Epoller::Mod() error");
-        fd_2_eventbase_list_[fd].reset();
+        //fd_2_eventbase_list_[fd].reset();
+        fd_2_eventbase_list_.erase(fd);
     }
 }
 
@@ -66,7 +72,8 @@ void Epoller::Del(std::shared_ptr<EventBase> eventbase)
     {
         perror("Epoller::Del() error");
     }
-    fd_2_eventbase_list_[fd].reset();
+    //fd_2_eventbase_list_[fd].reset();
+    fd_2_eventbase_list_.erase(fd);
 }
 
 // 等待事件发生

@@ -12,6 +12,7 @@ void Bind(int sockfd, const struct sockaddr_in& addr);
 void Listen(int sockfd);
 int Accept(int sockfd, struct sockaddr_in* addr);
 void Close(int sockfd);
+void SetReuseAddr(int sockfd);
 
 }
 
