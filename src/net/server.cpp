@@ -47,17 +47,15 @@ void Server::HandelNewConnection()
     int conn_fd = util::Accept(accept_sockfd_, &peer_addr);
 
     Looper* io_loop = thread_pool_->TakeOutLoop();
-    std::shared_ptr<Connection> conn = std::make_shared<Connection>(io_loop, conn_fd);
-    connection_map_[conn_fd] = conn;
-    conn->SetConnectionEstablishedCB(std::bind(&Server::TempConnCB, this));
+    std::shared_ptr<Connection> conn = std::make_shared<Connection>(io_loop, conn_fd, false);
+    conn->SetConnectionEstablishedCB(connection_established_cb_);
+    conn->SetMessageArrivalCB(message_arrival_cb_);
+    conn->SetReplyCompleteCB(reply_complete_cb_);
     conn->SetConnectionCloseCB(std::bind(&Server::RemoveConnection4CloseCB, this, std::placeholders::_1));
 
-    io_loop->RunTask(std::bind(&Connection::ConnectEstablished, conn));
-}
+    connection_map_[conn_fd] = conn;
 
-void Server::TempConnCB()
-{
-    std::cout << "TempConnCB()" << std::endl;
+    io_loop->RunTask(std::bind(&Connection::Register, conn));
 }
 
 void Server::RemoveConnection4CloseCB(int conn_fd)

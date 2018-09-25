@@ -25,7 +25,6 @@ public:
     void SetConnectionCloseCB(std::function<void()>&& cb) { connection_close_cb_ = cb; }
 private:
     void HandelNewConnection();
-    void TempConnCB();
 
     void RemoveConnection4CloseCB(int conn_fd);
     void RemoveConnection(int conn_fd);

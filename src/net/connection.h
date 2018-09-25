@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <memory>
+#include "iobuffer.h"
 
 class EventBase;
 class Looper;
@@ -10,19 +11,20 @@ class Looper;
 class Connection
 {
 public:
-    Connection(Looper* loop, int conn_sockfd);
+    Connection(Looper* loop, int conn_sockfd, bool is_keep_alive_connection);
     ~Connection();
+
+    void Register();
 
     void HandleRead();
     void HandleWrite();
     void HandleClose();
 
-    void SetConnectionEstablishedCB(std::function<void()>&& cb) { connection_established_cb_ = cb; }
-    void SetMessageArrivalCB(std::function<void()>&& cb) { message_arrival_cb_ = cb; }
-    void SetReplyCompleteCB(std::function<void()>&& cb) { reply_complete_cb_ = cb; }
-    void SetConnectionCloseCB(std::function<void(int)>&& cb) { connection_close_cb_ = cb; }
+    void SetConnectionEstablishedCB(const std::function<void()>& cb) { connection_established_cb_ = cb; }
+    void SetMessageArrivalCB(const std::function<void()>& cb) { message_arrival_cb_ = cb; }
+    void SetReplyCompleteCB(const std::function<void()>& cb) { reply_complete_cb_ = cb; }
+    void SetConnectionCloseCB(const std::function<void(int)>& cb) { connection_close_cb_ = cb; }
 
-    void ConnectEstablished();
 private:
     Looper* loop_;
 
@@ -35,6 +37,11 @@ private:
     std::function<void()> message_arrival_cb_;
     std::function<void()> reply_complete_cb_;
     std::function<void(int)> connection_close_cb_;
+
+    IOBuffer input_buffer_;
+    IOBuffer output_buffer_;
+
+    bool is_keep_alive_connection_;
 };
 
 #endif // CONNNECTION_H
