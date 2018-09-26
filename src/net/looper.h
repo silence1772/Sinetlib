@@ -25,6 +25,7 @@ public:
 
     // 注册事件
     void AddEventBase(std::shared_ptr<EventBase> eventbase);
+    void ModEventBase(std::shared_ptr<EventBase> eventbase);
     void DelEventBase(std::shared_ptr<EventBase> eventbase);
 
     void WakeUp();

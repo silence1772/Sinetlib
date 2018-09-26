@@ -4,13 +4,14 @@
 #include <netinet/in.h>
 #include "threadpool.h"
 #include "eventbase.h"
-#include "connection.h"
+//#include "connection.h"
 #include <iostream>
 
-Server::Server(Looper* loop, int port, int thread_num) :
+Server::Server(Looper* loop, int port, int thread_num, bool is_keep_alive_connection) :
     loop_(loop),
     thread_pool_(new ThreadPool(loop_, thread_num)),
-    accept_sockfd_(util::Create())
+    accept_sockfd_(util::Create()),
+    is_keep_alive_connection_(is_keep_alive_connection)
 {
     bzero(&addr_, sizeof(addr_));
     addr_.sin_family = AF_INET;
@@ -47,7 +48,7 @@ void Server::HandelNewConnection()
     int conn_fd = util::Accept(accept_sockfd_, &peer_addr);
 
     Looper* io_loop = thread_pool_->TakeOutLoop();
-    std::shared_ptr<Connection> conn = std::make_shared<Connection>(io_loop, conn_fd, false);
+    std::shared_ptr<Connection> conn = std::make_shared<Connection>(io_loop, conn_fd, is_keep_alive_connection_);
     conn->SetConnectionEstablishedCB(connection_established_cb_);
     conn->SetMessageArrivalCB(message_arrival_cb_);
     conn->SetReplyCompleteCB(reply_complete_cb_);

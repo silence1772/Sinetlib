@@ -5,22 +5,22 @@
 #include <memory>
 #include <netinet/in.h>
 #include <map>
-
+#include "connection.h"
 
 class ThreadPool;
 class EventBase;
-class Connection;
+//class Connection;
 
 class Server
 {
 public:
-    Server(Looper* loop, int port, int thread_num = 1);
+    Server(Looper* loop, int port, int thread_num = 1, bool is_keep_alive_connection = false);
     ~Server();
     
     void Start();
 
     void SetConnectionEstablishedCB(std::function<void()>&& cb) { connection_established_cb_ = cb; }
-    void SetMessageArrivalCB(std::function<void()>&& cb) { message_arrival_cb_ = cb; }
+    void SetMessageArrivalCB(std::function<void(const std::shared_ptr<Connection>&)>&& cb) { message_arrival_cb_ = cb; }
     void SetReplyCompleteCB(std::function<void()>&& cb) { reply_complete_cb_ = cb; }
     void SetConnectionCloseCB(std::function<void()>&& cb) { connection_close_cb_ = cb; }
 private:
@@ -42,11 +42,13 @@ private:
     // 连接建立后的回调函数
     std::function<void()> connection_established_cb_;
     // 新消息到来时回调
-    std::function<void()> message_arrival_cb_;
+    std::function<void(const std::shared_ptr<Connection>&)> message_arrival_cb_;
     // 答复消息完成时回调
     std::function<void()> reply_complete_cb_;
     // 连接关闭时回调
     std::function<void()> connection_close_cb_;
+
+    bool is_keep_alive_connection_;
 };
 
 #endif // SERVER_H

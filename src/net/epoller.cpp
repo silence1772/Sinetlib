@@ -27,7 +27,7 @@ Epoller::~Epoller()
 void Epoller::Add(std::shared_ptr<EventBase> eventbase)
 {
     // 创建epoll_event结构体作为epoll_ctl的参数
-    int fd = eventbase->GetFD();
+    int fd = eventbase->GetFd();
     struct epoll_event event;
     event.events = eventbase->GetEvents();
     event.data.fd = fd;
@@ -47,7 +47,7 @@ void Epoller::Add(std::shared_ptr<EventBase> eventbase)
 // 修改注册的事件
 void Epoller::Mod(std::shared_ptr<EventBase> eventbase)
 {
-    int fd = eventbase->GetFD();
+    int fd = eventbase->GetFd();
     struct epoll_event event;
     event.events = eventbase->GetEvents();
     event.data.fd = fd;
@@ -63,7 +63,7 @@ void Epoller::Mod(std::shared_ptr<EventBase> eventbase)
 // 删除注册的事件
 void Epoller::Del(std::shared_ptr<EventBase> eventbase)
 {
-    int fd = eventbase->GetFD();
+    int fd = eventbase->GetFd();
     struct epoll_event event;
     event.events = eventbase->GetEvents();
     event.data.fd = fd;

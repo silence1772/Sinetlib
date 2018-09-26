@@ -19,6 +19,8 @@ public:
     void EnableWriteEvents() { events_ |= EPOLLOUT; }
     void EnableCloseEvents() { events_ |= EPOLLRDHUP; }
 
+    void DisableWriteEvents() { events_ &= ~EPOLLOUT; }
+
     // 设置相应的事件处理函数
     void SetReadCallback(Callback&& cb) { read_callback_ = cb; }
     void SetWriteCallback(Callback&& cb) { write_callback_ = cb; }
@@ -31,8 +33,10 @@ public:
     // 分发事件处理
     void HandleEvent();
 
-    int GetFD() const { return fd_; }
+    int GetFd() const { return fd_; }
     int GetEvents() const { return events_; }
+
+    bool IsWriting() const { return events_ & EPOLLOUT; }
 private:
     // 以下两个变量对应epoll_event结构体中内容
     // 文件描述符

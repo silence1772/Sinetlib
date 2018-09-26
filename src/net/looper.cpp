@@ -43,6 +43,11 @@ void Looper::AddEventBase(std::shared_ptr<EventBase> eventbase)
     epoller_->Add(eventbase);
 }
 
+void Looper::ModEventBase(std::shared_ptr<EventBase> eventbase)
+{
+    epoller_->Mod(eventbase);
+}
+
 void Looper::DelEventBase(std::shared_ptr<EventBase> eventbase)
 {
     epoller_->Del(eventbase);
