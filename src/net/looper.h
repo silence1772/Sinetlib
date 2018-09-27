@@ -6,9 +6,11 @@
 #include <memory>
 #include <functional>
 #include <mutex>
+#include "timer.h"
 
 class EventBase;
 class Epoller;
+class TimerQueue;
 
 class Looper
 {
@@ -34,6 +36,8 @@ public:
     void RunTask(Task&& task);
     void AddTask(Task&& task);
 
+    void RunTaskAfter(Task&& task, Nanosecond interval);
+
     void HandleTask();
 
     bool IsInBaseThread() const { return thread_id_ == CurrentThread::GetTid(); }
@@ -44,6 +48,7 @@ private:
     std::shared_ptr<EventBase> wakeup_eventbase_;
     const pid_t thread_id_;
     std::unique_ptr<Epoller> epoller_;
+    std::unique_ptr<TimerQueue> timer_queue_;
 
     // 注册的事件列表
     //std::vector<std::shared_ptr<EventBase>> eventbase_list_;

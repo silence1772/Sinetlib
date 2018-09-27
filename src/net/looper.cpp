@@ -3,6 +3,8 @@
 #include "epoller.h"
 #include <sys/eventfd.h>
 #include <unistd.h>
+#include "timerqueue.h"
+#include <sys/time.h> // gor gettimeofday()
 
 Looper::Looper() :
     quit_(false),
@@ -10,7 +12,8 @@ Looper::Looper() :
     wakeup_fd_(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)),
     wakeup_eventbase_(std::make_shared<EventBase>(wakeup_fd_)),
     thread_id_(CurrentThread::GetTid()),
-    epoller_(new Epoller())
+    epoller_(new Epoller()),
+    timer_queue_(new TimerQueue(this))
 {
     wakeup_eventbase_->SetReadCallback(std::bind(&Looper::HandleWakeUp, this));
     wakeup_eventbase_->EnableReadEvents();
@@ -90,6 +93,11 @@ void Looper::AddTask(Task&& task)
     {
         WakeUp();
     }
+}
+
+void Looper::RunTaskAfter(Task&& task, Nanosecond interval)
+{
+    timer_queue_->AddTimer(task, system_clock::now() + interval);
 }
 
 void Looper::HandleTask()

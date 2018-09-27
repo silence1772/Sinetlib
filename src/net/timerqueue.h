@@ -2,19 +2,20 @@
 #define TIMERQUEUE_H
 
 #include <stdint.h>
-#include <set>
 #include <vector>
 #include <functional>
-#include "eventbase.h"
+#include <queue>
+#include <memory>
+#include "timer.h"
 
+class EventBase;
 class Looper;
-class Timer;
 
-struct TimerCmp
+struct cmp
 {
-    bool operator()(std::shared_ptr<Timer>& lhs, std::shared_ptr<Timer>& rhs)
+    bool operator()(const std::shared_ptr<Timer>& lhs, const std::shared_ptr<Timer>& rhs)
     {
-        return lhs->GetExpirationTimestamp() > rhs->GetExpirationTimestamp();
+        return lhs->GetExpTime() > rhs->GetExpTime();
     }
 };
 
@@ -24,23 +25,20 @@ public:
     TimerQueue(Looper* loop);
     ~TimerQueue();
     
-    void AddTimer(const std::function<void()>& cb, int64_t timestamp);
+    void AddTimer(const std::function<void()>& cb, Timestamp when);
 
 private:
-    void ResetTimerfd(int timerfd, int64_t timestamp);
+    void ResetTimerfd(int timerfd, Timestamp when);
     
     void HandelTimerExpired();
-    std::vector<Entry> GetExpired(Timestamp now_timestamp);
 
-    
 
     Looper* loop_;
     const int timerfd_;
     std::shared_ptr<EventBase> timer_eventbase_;
     
-
     using TimerPtr = std::shared_ptr<Timer>;
-    std::priority_queue<TimerPtr, std::vector<TimerPtr>, greater<TimerCmp>> timer_queue_;
+    std::priority_queue<TimerPtr, std::vector<TimerPtr>, cmp> timer_queue_;
 };
 
 #endif // TIMERQUEUE_H
