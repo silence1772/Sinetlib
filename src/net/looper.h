@@ -1,12 +1,13 @@
 #ifndef LOOPER_h
 #define LOOPER_h
 
-#include "currentthread.h"
+//#include "currentthread.h"
 #include <vector>
 #include <memory>
 #include <functional>
 #include <mutex>
-#include "timer.h"
+#include "timestamp.h"
+#include <thread>
 
 class EventBase;
 class Epoller;
@@ -40,13 +41,13 @@ public:
 
     void HandleTask();
 
-    bool IsInBaseThread() const { return thread_id_ == CurrentThread::GetTid(); }
+    bool IsInBaseThread() const { return thread_id_ == std::this_thread::get_id(); }
 private:
     bool quit_;
     bool is_handle_task_;
     int wakeup_fd_;
     std::shared_ptr<EventBase> wakeup_eventbase_;
-    const pid_t thread_id_;
+    const std::thread::id thread_id_;
     std::unique_ptr<Epoller> epoller_;
     std::unique_ptr<TimerQueue> timer_queue_;
 

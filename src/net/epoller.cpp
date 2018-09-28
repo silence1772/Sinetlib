@@ -2,7 +2,8 @@
 #include "eventbase.h"
 #include <stdio.h>
 #include <iostream>
-#include "currentthread.h"
+//#include "currentthread.h"
+#include <thread>
 #include "util.h"
 
 // epoll_wait最多监听事件数
@@ -81,7 +82,7 @@ std::vector<std::shared_ptr<EventBase>> Epoller::Poll()
 {
     while (true)
     {
-        std::cout << CurrentThread::GetTid() << " epoll_wait" << std::endl; 
+        std::cout << std::this_thread::get_id() << " epoll_wait" << std::endl; 
         int active_event_count = epoll_wait(epollfd_, &*active_event_.begin(), active_event_.size(), EPOLL_WAIT_TIME);
 
         if (active_event_count < 0)

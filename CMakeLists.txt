@@ -32,7 +32,7 @@ set(INSTALL_PATH_LIB lib)
 set(INSTALL_PATH_INCLUDE include)
 
 # src下所有源码目录
-set(SRC_LIST "log")
+set(SRC_LIST "log" "base" "net")
 
 # 遍历所有源码目录
 foreach(SUB_DIR ${SRC_LIST})

@@ -2,7 +2,7 @@
 #include "looper.h"
 #include "currentthread.h"
 #include <iostream>
-#include "timer.h"
+#include "timestamp.h"
 
 void OnMessage(const std::shared_ptr<Connection>& conn)
 {
@@ -23,7 +23,6 @@ int main()
     s.SetMessageArrivalCB(OnMessage);
     s.Start();
 
-    Second sec(3);
-    loop.RunTaskAfter(test, sec);
+    loop.RunTaskAfter(test, Second(3));
     loop.Start();
 }

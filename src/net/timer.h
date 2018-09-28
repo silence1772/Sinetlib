@@ -3,12 +3,7 @@
 
 #include <stdint.h>
 #include <functional>
-#include <chrono>
-
-using std::chrono::system_clock;
-using Nanosecond = std::chrono::nanoseconds;
-using Second = std::chrono::seconds;
-using Timestamp = std::chrono::time_point<system_clock, Nanosecond>;
+#include "timestamp.h"
 
 class Timer
 {

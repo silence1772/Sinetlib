@@ -1,5 +1,4 @@
 #include "eventbase.h"
-#include <iostream>
 
 EventBase::EventBase(int fd) : 
     fd_(fd),
@@ -14,9 +13,11 @@ void EventBase::HandleEvent()
     // 服务器端发生异常
     if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN))
     {
+        if (close_callback_)
+            close_callback_();
         return;
     }
-    // 错误事件
+    // 发生错误
     if (revents_ & EPOLLERR)
     {
         if (error_callback_)

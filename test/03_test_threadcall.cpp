@@ -5,6 +5,7 @@
 #include <unistd.h> // for close()
 #include <sys/timerfd.h>
 #include <iostream>
+#include "currentthread.h"
 
 ThreadPool* g_tp;
 int g_timefd;

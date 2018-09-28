@@ -11,7 +11,7 @@ Looper::Looper() :
     is_handle_task_(false),
     wakeup_fd_(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)),
     wakeup_eventbase_(std::make_shared<EventBase>(wakeup_fd_)),
-    thread_id_(CurrentThread::GetTid()),
+    thread_id_(std::this_thread::get_id()),
     epoller_(new Epoller()),
     timer_queue_(new TimerQueue(this))
 {
@@ -108,7 +108,7 @@ void Looper::HandleTask()
         std::unique_lock<std::mutex> lock(mutex_);
         tasks.swap(task_queue_);
     }
-    for (auto i = 0; i < tasks.size(); ++i)
+    for (size_t i = 0; i < tasks.size(); ++i)
     {
         tasks[i]();
     }
