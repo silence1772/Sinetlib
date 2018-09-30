@@ -61,6 +61,7 @@ void Server::HandelNewConnection()
 
 void Server::RemoveConnection4CloseCB(int conn_fd)
 {
+
     loop_->AddTask(std::bind(&Server::RemoveConnection, this, conn_fd));
 }
 

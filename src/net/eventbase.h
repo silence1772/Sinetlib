@@ -21,7 +21,7 @@ public:
     void EnableReadEvents()    { events_ |= (EPOLLIN | EPOLLPRI); }
     // 关注可写事件
     void EnableWriteEvents()   { events_ |= EPOLLOUT; }
-    void EnableCloseEvents()   { events_ |= EPOLLRDHUP; }
+    void EnableCloseEvents()   {  }//events_ |= EPOLLRDHUP;
 
     // 取消关注相应事件
     void DisableReadEvents()   { events_ &= ~(EPOLLIN | EPOLLPRI); }

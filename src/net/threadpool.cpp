@@ -6,13 +6,12 @@
 ThreadPool::ThreadPool(Looper* base_loop, int thread_num) :
     base_loop_(base_loop),
     thread_num_(thread_num),
-    next_(0)
-{
-    //assert(thread_num_ > 0);
-}
+    next_(0) 
+{}
 
 ThreadPool::~ThreadPool() {}
 
+// 启动线程池，即创建相应数量的线程放入池中
 void ThreadPool::Start()
 {
     for (int i = 0; i < thread_num_; ++i)
@@ -23,6 +22,7 @@ void ThreadPool::Start()
     }
 }
 
+// 取出loop消费，简单的循环取用
 Looper* ThreadPool::TakeOutLoop()
 {
     Looper* loop = base_loop_;

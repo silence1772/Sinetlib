@@ -2,7 +2,7 @@
 
 EventBase::EventBase(int fd) : 
     fd_(fd),
-    events_(0),
+    events_(EPOLLRDHUP),
     revents_(0)
 {}
 

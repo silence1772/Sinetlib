@@ -1,10 +1,9 @@
 #include "looper.h"
 #include "eventbase.h"
-#include "epoller.h"
+#include "timerqueue.h"
+#include "logger.h"
 #include <sys/eventfd.h>
 #include <unistd.h>
-#include "timerqueue.h"
-#include <sys/time.h> // gor gettimeofday()
 
 Looper::Looper() :
     quit_(false),
@@ -15,8 +14,14 @@ Looper::Looper() :
     epoller_(new Epoller()),
     timer_queue_(new TimerQueue(this))
 {
+    if (wakeup_fd_ < 0)
+    {
+        LOG_FATAL << "create wakeup_fd_ failed";
+    }
+    // 关注可读事件
     wakeup_eventbase_->SetReadCallback(std::bind(&Looper::HandleWakeUp, this));
     wakeup_eventbase_->EnableReadEvents();
+    // 注册到epoller上
     AddEventBase(wakeup_eventbase_);
 }
 
@@ -39,50 +44,39 @@ void Looper::Start()
     }
 }
 
-// 注册事件
-void Looper::AddEventBase(std::shared_ptr<EventBase> eventbase)
-{
-    //eventbase_list_.push_back(eventbase);
-    epoller_->Add(eventbase);
-}
-
-void Looper::ModEventBase(std::shared_ptr<EventBase> eventbase)
-{
-    epoller_->Mod(eventbase);
-}
-
-void Looper::DelEventBase(std::shared_ptr<EventBase> eventbase)
-{
-    epoller_->Del(eventbase);
-}
-
+// 唤醒循环，由其他线程调用
 void Looper::WakeUp()
 {
     uint64_t one = 1;
     ssize_t n = write(wakeup_fd_, &one, sizeof(one));
     if (n != sizeof(one))
     {
-        //LOG_SYSERR << "write error";
+        LOG_ERROR << "wake up error in write()";
     }
 }
+
+// 处理唤醒事件
 void Looper::HandleWakeUp()
 {
     uint64_t one = 1;
     ssize_t n = read(wakeup_fd_, &one, sizeof(one));
     if (n != sizeof(one))
     {
-        //LOG_SYSERR << "read error";
+        LOG_ERROR << "handle wake up error in read()";
     }
 }
 
+// 运行Task，可由其他线程调用
 void Looper::RunTask(Task&& task)
 {
+    // 如果不是在自己所在线程调用，则添加进任务队列后唤醒该loop进行处理
     if (IsInBaseThread())
         task();
     else
         AddTask(std::move(task));
 }
 
+// 添加任务
 void Looper::AddTask(Task&& task)
 {
     {
@@ -95,11 +89,7 @@ void Looper::AddTask(Task&& task)
     }
 }
 
-void Looper::RunTaskAfter(Task&& task, Nanosecond interval)
-{
-    timer_queue_->AddTimer(task, system_clock::now() + interval);
-}
-
+// 执行任务队列
 void Looper::HandleTask()
 {
     is_handle_task_ = true;
@@ -114,3 +104,10 @@ void Looper::HandleTask()
     }
     is_handle_task_ = false;
 }
+
+// 一定时间后执行该任务，非线程安全，只能在looper所在线程调用
+void Looper::RunTaskAfter(Task&& task, Nanosecond interval)
+{
+    timer_queue_->AddTimer(task, system_clock::now() + interval);
+}
+
