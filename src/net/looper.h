@@ -1,5 +1,5 @@
-#ifndef LOOPER_h
-#define LOOPER_h
+#ifndef LOOPER_H
+#define LOOPER_H
 
 #include "timestamp.h"
 #include "epoller.h"
@@ -63,4 +63,4 @@ private:
     std::vector<Task> task_queue_;
 };
 
-#endif // LOOPER_h
+#endif // LOOPER_H

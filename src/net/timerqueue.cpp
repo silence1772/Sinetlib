@@ -1,11 +1,12 @@
 #include "timerqueue.h"
 #include "eventbase.h"
 #include "looper.h"
+#include "logger.h"
 #include "timer.h"
+#include "util.h"
 #include <sys/timerfd.h>
-#include <unistd.h> // for close()
 #include <string.h> // for bzero()
-#include <sys/time.h> // gor gettimeofday()
+#include <unistd.h> // for read()
 #include <ratio> // std::nano::den
 
 TimerQueue::TimerQueue(Looper* loop) :
@@ -20,13 +21,14 @@ TimerQueue::TimerQueue(Looper* loop) :
 
 TimerQueue::~TimerQueue()
 {
-    close(timerfd_);
+    util::Close(timerfd_);
 }
 
 void TimerQueue::AddTimer(const std::function<void()>& cb, Timestamp when)
 {
     auto timer = std::make_shared<Timer>(cb, when);
     
+    // 新的定时器到期时间小于队列中最小的那个的话，则更新timerfd到期时间
     if (timer_queue_.empty() || timer->GetExpTime() < timer_queue_.top()->GetExpTime())
     {
         ResetTimerfd(timerfd_, timer->GetExpTime());
@@ -37,21 +39,13 @@ void TimerQueue::AddTimer(const std::function<void()>& cb, Timestamp when)
 
 void TimerQueue::ResetTimerfd(int timerfd, Timestamp when)
 {
-    
-
-    // get gap between now and future
-    // struct timeval tv;
-    // gettimeofday(&tv, NULL);
-    // int64_t microseconds = timestamp - (tv.tv_sec * 1000 * 1000 + tv.tv_usec);
-    // if (microseconds < 100)
-    //     microseconds = 100;
-
+    // 计算多久后到期
     struct timespec ts;
     Nanosecond gap = when - system_clock::now();
     ts.tv_sec = static_cast<time_t>(gap.count() / std::nano::den);
     ts.tv_nsec = gap.count() % std::nano::den;
 
-    // update timerfd's remaining time
+    // 更新timerfd剩余到期时间
     struct itimerspec new_value, old_value;
     bzero(&new_value, sizeof(new_value));
     bzero(&old_value, sizeof(old_value));
@@ -60,6 +54,7 @@ void TimerQueue::ResetTimerfd(int timerfd, Timestamp when)
     timerfd_settime(timerfd, 0, &new_value, &old_value);
 }
 
+// 处理定时器超时
 void TimerQueue::HandelTimerExpired()
 {
     // read the timerfd
@@ -67,21 +62,19 @@ void TimerQueue::HandelTimerExpired()
     ssize_t n = read(timerfd_, &exp_cnt, sizeof(exp_cnt));
     if (n != sizeof(exp_cnt))
     {
-        // LOG_SYSERR << "read error";
+        LOG_ERROR << "read error";
     }
 
-    // struct timeval tv;
-    // gettimeofday(&tv, NULL);
-    // int64_t now_microseconds = (tv.tv_sec * 1000 * 1000 + tv.tv_usec);
 
     Timestamp now(system_clock::now());
-
+    // 处理所有到期的定时器
     while (!timer_queue_.empty() && timer_queue_.top()->GetExpTime() < now)
     {
         timer_queue_.top()->Run();
         timer_queue_.pop();
     }
 
+    // 重设timerfd到期时间
     if (!timer_queue_.empty())
     {
         ResetTimerfd(timerfd_, timer_queue_.top()->GetExpTime());

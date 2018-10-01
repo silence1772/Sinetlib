@@ -2,31 +2,36 @@
 #define SERVER_H
 
 #include "looper.h"
-#include <memory>
-#include <netinet/in.h>
-#include <map>
 #include "connection.h"
+#include <netinet/in.h>
+#include <memory>
+#include <map>
+
 
 class ThreadPool;
 class EventBase;
-//class Connection;
 
 class Server
 {
 public:
+    using Callback = std::function<void(const std::shared_ptr<Connection>&)>;
+
     Server(Looper* loop, int port, int thread_num = 1, bool is_keep_alive_connection = false);
     ~Server();
     
     void Start();
 
-    void SetConnectionEstablishedCB(std::function<void()>&& cb) { connection_established_cb_ = cb; }
-    void SetMessageArrivalCB(std::function<void(const std::shared_ptr<Connection>&)>&& cb) { message_arrival_cb_ = cb; }
-    void SetReplyCompleteCB(std::function<void()>&& cb) { reply_complete_cb_ = cb; }
-    void SetConnectionCloseCB(std::function<void()>&& cb) { connection_close_cb_ = cb; }
+    // 设置回调
+    void SetConnectionEstablishedCB(Callback&& cb) { connection_established_cb_ = cb; }
+    void SetMessageArrivalCB(Callback&& cb) { message_arrival_cb_ = cb; }
+    void SetReplyCompleteCB(Callback&& cb) { reply_complete_cb_ = cb; }
+
 private:
+    // 处理新连接
     void HandelNewConnection();
 
-    void RemoveConnection4CloseCB(int conn_fd);
+    // 移除连接
+    void RemoveConnection4CloseCB(const std::shared_ptr<Connection>& conn);
     void RemoveConnection(int conn_fd);
 
     Looper* loop_;
@@ -36,18 +41,17 @@ private:
     struct sockaddr_in addr_;
     std::shared_ptr<EventBase> accept_eventbase_;
 
+    // 描述符到连接的映射，用来保存所有连接
     std::map<int, std::shared_ptr<Connection>> connection_map_;
 
-    // 供用户设置的tcp连接各个状态的回调函数
     // 连接建立后的回调函数
-    std::function<void()> connection_established_cb_;
-    // 新消息到来时回调
-    std::function<void(const std::shared_ptr<Connection>&)> message_arrival_cb_;
-    // 答复消息完成时回调
-    std::function<void()> reply_complete_cb_;
-    // 连接关闭时回调
-    std::function<void()> connection_close_cb_;
+    Callback connection_established_cb_;
+    // 新消息到来时
+    Callback message_arrival_cb_;
+    // 答复消息完成时
+    Callback reply_complete_cb_;
 
+    // 是否为保活连接，即长连接
     bool is_keep_alive_connection_;
 };
 

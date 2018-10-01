@@ -7,6 +7,7 @@ const size_t IOBuffer::PREPEND_SIZE;
 const size_t IOBuffer::INITIAL_SIZE;
 const char   IOBuffer::CRLF[] = "\r\n";
 
+// 读取fd上的数据一次
 ssize_t IOBuffer::ReadFdOnce(int fd, int* saved_errno)
 {
     char extra_buf[65536];
@@ -17,6 +18,7 @@ ssize_t IOBuffer::ReadFdOnce(int fd, int* saved_errno)
     vec[1].iov_base = extra_buf;
     vec[1].iov_len = sizeof(extra_buf);
 
+    // 如果缓冲区的大小大于extra_buf，则不使用extra_buf
     const int iovcnt = (writable < sizeof(extra_buf)) ? 2 : 1;
     const ssize_t n = readv(fd, vec, iovcnt);
     if (n < 0)
@@ -35,6 +37,7 @@ ssize_t IOBuffer::ReadFdOnce(int fd, int* saved_errno)
     return n;
 }
 
+// 循环读取fd上的数据
 ssize_t IOBuffer::ReadFdRepeatedly(int fd, int* saved_errno)
 {
     int n = 0;

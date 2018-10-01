@@ -1,13 +1,15 @@
 #include "connection.h"
 #include "eventbase.h"
 #include "looper.h"
-#include <iostream>
+#include "logger.h"
 #include <unistd.h>
 
-Connection::Connection(Looper* loop, int conn_sockfd, bool is_keep_alive_connection) :
+Connection::Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& local_addr, const struct sockaddr_in& peer_addr, bool is_keep_alive_connection) :
     loop_(loop),
     conn_sockfd_(conn_sockfd),
     conn_eventbase_(new EventBase(conn_sockfd_)),
+    local_addr_(local_addr),
+    peer_addr_(peer_addr),
     is_keep_alive_connection_(is_keep_alive_connection)
 {
     conn_eventbase_->SetReadCallback(std::bind(&Connection::HandleRead, this));
@@ -15,48 +17,43 @@ Connection::Connection(Looper* loop, int conn_sockfd, bool is_keep_alive_connect
     conn_eventbase_->SetCloseCallback(std::bind(&Connection::HandleClose, this));
     conn_eventbase_->EnableEdgeTriggered();
     conn_eventbase_->EnableReadEvents();
-    conn_eventbase_->EnableCloseEvents();
 }
 
 Connection::~Connection() {}
 
+// 连接建立后在分配的线程上注册事件
 void Connection::Register()
 {
     loop_->AddEventBase(conn_eventbase_);
     if (connection_established_cb_)
-        connection_established_cb_();
+        connection_established_cb_(shared_from_this());
 }
 
+// 往对端发送消息
 void Connection::Send(const std::string& message)
 {
     ssize_t n_wrote = 0;
-    // writing directly when output buffer is empty
+    // 当output buffer为空时直接write而不经过缓冲区
     if (!conn_eventbase_->IsWriting() && output_buffer_.GetReadableSize() == 0)
     {
         n_wrote = write(conn_eventbase_->GetFd(), message.data(), message.size());
         if (n_wrote >= 0)
         {
-            // if ((size_t)n_wrote < message.size())
-            // {
-            //     LOG_TRACE << "need to write again";
-            // }
-            // else if (write_complete_callback_)
-            // {
-            //     loop_->QueueInLoop(std::bind(write_complete_callback_, shared_from_this()));
-            // }
+            // 数据已写完
             if ((size_t)n_wrote == message.size() && reply_complete_cb_)
-                reply_complete_cb_();
+                reply_complete_cb_(shared_from_this());
         }
         else
         {
             n_wrote = 0;
-            // if (errno != EWOULDBLOCK)
-            // {
-            //     LOG_SYSERR << "write error";
-            // }
+            if (errno != EWOULDBLOCK)
+            {
+                LOG_ERROR << "write error";
+            }
         }
     }
 
+    // 数据未能一次性写完或者缓冲区不为空
     if ((size_t)n_wrote < message.size())
     {
         output_buffer_.Append(message.data() + n_wrote, message.size() - n_wrote);
@@ -68,6 +65,7 @@ void Connection::Send(const std::string& message)
     }
 }
 
+// 处理可读事件
 void Connection::HandleRead()
 {
     int saved_errno = 0;
@@ -83,13 +81,8 @@ void Connection::HandleRead()
    
     if (n > 0)
     {
-        std::cout << saved_errno << std::endl;
         if (message_arrival_cb_)
             message_arrival_cb_(shared_from_this());
-    }
-    else if (n == 0)
-    {
-        HandleClose();
     }
     else
     {
@@ -97,6 +90,7 @@ void Connection::HandleRead()
     }
 }
 
+// 处理可写事件
 void Connection::HandleWrite()
 {
     if (conn_eventbase_->IsWriting())
@@ -111,33 +105,21 @@ void Connection::HandleWrite()
                 loop_->ModEventBase(conn_eventbase_);
                 if (reply_complete_cb_)
                 {
-                    reply_complete_cb_();
+                    reply_complete_cb_(shared_from_this());
                 }
-                // if (state_ == Disconnecting)
-                // {
-                //     ShutdownInLoop();
-                // }
             }
-            // else
-            // {
-            //     LOG_TRACE << "need to write again";
-            // }
         }
-        // else
-        // {
-        //     LOG_SYSERR << "write error";
-        //     abort();
-        // }
+        else
+        {
+            LOG_ERROR << "write error";
+        }
     }
-    // else
-    // {
-    //     LOG_TRACE << "Connection is down, no more writing";
-    // }
 }
 
+// 关闭连接
 void Connection::HandleClose()
 {
     loop_->DelEventBase(conn_eventbase_);
     if (connection_close_cb_)
-        connection_close_cb_(conn_sockfd_);
+        connection_close_cb_(shared_from_this());
 }

@@ -1,16 +1,17 @@
 #ifndef TIMERQUEUE_H
 #define TIMERQUEUE_H
 
+#include "timer.h"
 #include <stdint.h>
 #include <vector>
 #include <functional>
 #include <queue>
 #include <memory>
-#include "timer.h"
 
 class EventBase;
 class Looper;
 
+// 比较器
 struct cmp
 {
     bool operator()(const std::shared_ptr<Timer>& lhs, const std::shared_ptr<Timer>& rhs)
@@ -32,11 +33,12 @@ private:
     
     void HandelTimerExpired();
 
-
     Looper* loop_;
+
     const int timerfd_;
     std::shared_ptr<EventBase> timer_eventbase_;
     
+    // 小顶堆实现的定时器队列
     using TimerPtr = std::shared_ptr<Timer>;
     std::priority_queue<TimerPtr, std::vector<TimerPtr>, cmp> timer_queue_;
 };
