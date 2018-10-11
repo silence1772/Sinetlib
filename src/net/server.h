@@ -3,6 +3,7 @@
 
 #include "looper.h"
 #include "connection.h"
+#include "iobuffer.h"
 #include <netinet/in.h>
 #include <memory>
 #include <map>
@@ -15,6 +16,7 @@ class Server
 {
 public:
     using Callback = std::function<void(const std::shared_ptr<Connection>&)>;
+    using MessageCallback = std::function<void(const std::shared_ptr<Connection>&, IOBuffer*)>;
 
     Server(Looper* loop, int port, int thread_num = 1, bool is_keep_alive_connection = false);
     ~Server();
@@ -23,7 +25,7 @@ public:
 
     // 设置回调
     void SetConnectionEstablishedCB(Callback&& cb) { connection_established_cb_ = cb; }
-    void SetMessageArrivalCB(Callback&& cb) { message_arrival_cb_ = cb; }
+    void SetMessageArrivalCB(MessageCallback&& cb) { message_arrival_cb_ = cb; }
     void SetReplyCompleteCB(Callback&& cb) { reply_complete_cb_ = cb; }
 
 private:
@@ -47,7 +49,7 @@ private:
     // 连接建立后的回调函数
     Callback connection_established_cb_;
     // 新消息到来时
-    Callback message_arrival_cb_;
+    MessageCallback message_arrival_cb_;
     // 答复消息完成时
     Callback reply_complete_cb_;
 

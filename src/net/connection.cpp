@@ -30,17 +30,17 @@ void Connection::Register()
 }
 
 // 往对端发送消息
-void Connection::Send(const std::string& message)
+void Connection::Send(const void* data, size_t len)
 {
     ssize_t n_wrote = 0;
     // 当output buffer为空时直接write而不经过缓冲区
     if (!conn_eventbase_->IsWriting() && output_buffer_.GetReadableSize() == 0)
     {
-        n_wrote = write(conn_eventbase_->GetFd(), message.data(), message.size());
+        n_wrote = write(conn_eventbase_->GetFd(), data, len);
         if (n_wrote >= 0)
         {
             // 数据已写完
-            if ((size_t)n_wrote == message.size() && reply_complete_cb_)
+            if ((size_t)n_wrote == len && reply_complete_cb_)
                 reply_complete_cb_(shared_from_this());
         }
         else
@@ -54,15 +54,26 @@ void Connection::Send(const std::string& message)
     }
 
     // 数据未能一次性写完或者缓冲区不为空
-    if ((size_t)n_wrote < message.size())
+    if ((size_t)n_wrote < len)
     {
-        output_buffer_.Append(message.data() + n_wrote, message.size() - n_wrote);
+        output_buffer_.Append(static_cast<const char*>(data) + n_wrote, len - n_wrote);
         if (!conn_eventbase_->IsWriting())
         {
             conn_eventbase_->EnableWriteEvents();
             loop_->ModEventBase(conn_eventbase_);
         }
     }
+}
+
+void Connection::Send(const std::string& message)
+{
+    Send(message.data(), message.size());
+}
+
+void Connection::Send(IOBuffer& buffer)
+{
+    Send(buffer.GetReadablePtr(), buffer.GetReadableSize());
+    buffer.RetrieveAll();
 }
 
 // 处理可读事件
@@ -82,7 +93,7 @@ void Connection::HandleRead()
     if (n > 0)
     {
         if (message_arrival_cb_)
-            message_arrival_cb_(shared_from_this());
+            message_arrival_cb_(shared_from_this(), &input_buffer_);
     }
     else
     {

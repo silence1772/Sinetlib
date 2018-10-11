@@ -1,10 +1,11 @@
 #include "server.h"
 #include "looper.h"
+#include "iobuffer.h"
 #include "currentthread.h"
 #include <iostream>
 #include "timestamp.h"
 
-void OnMessage(const std::shared_ptr<Connection>& conn)
+void OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf)
 {
     std::cout << CurrentThread::GetTid() << " OnMessage" << std::endl;
     conn->Send("Hi");

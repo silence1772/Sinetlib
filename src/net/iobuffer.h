@@ -147,6 +147,11 @@ public:
         Append(static_cast<const char*>(data), len);
     }
 
+    void Append(const std::string& str)
+    {
+        Append(str.data(), str.size());
+    }
+
     // void AppendInt64(int64_t x)
     // {
     //     int64_t be64 = be64toh(x);
