@@ -72,6 +72,11 @@ public:
         receive_time_ = t;
     }
 
+    void AddParm(std::string key, std::string value)
+    {
+        parm_[key] = value;
+    }
+
     void AddHeader(const char* start, const char* colon, const char* end)
     {
         std::string field(start, colon++);
@@ -150,6 +155,8 @@ private:
     Timestamp receive_time_;
     std::map<std::string, std::string> headers_;
     std::string body_;
+
+    std::map<std::string, std::string> parm_;
 };
 
 #endif // HTTP_REQUEST_H

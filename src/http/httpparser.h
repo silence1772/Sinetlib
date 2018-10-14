@@ -1,11 +1,11 @@
-#ifndef HTTP_CONTEXT_H
-#define HTTP_CONTEXT_H
+#ifndef HTTP_PARSER_H
+#define HTTP_PARSER_H
 
 #include "httprequest.h"
 
 class IOBuffer;
 
-class HttpContext
+class HttpParser
 {
 public:
     enum ParseState
@@ -24,7 +24,7 @@ public:
         REQUEST_LINE_STATE_FINISH
     };
 
-    HttpContext() :
+    HttpParser() :
         state_(PARSE_STATE_REQUESTLINE),
         request_line_state_(REQUEST_LINE_STATE_METHOD) {}
     
@@ -51,4 +51,4 @@ private:
     HttpRequest request_;
 };
 
-#endif // HTTP_CONTEXT_H
+#endif // HTTP_PARSER_H

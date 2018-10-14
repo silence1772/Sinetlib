@@ -2,6 +2,7 @@
 #include "eventbase.h"
 #include "looper.h"
 #include "logger.h"
+#include "util.h"
 #include <unistd.h>
 
 Connection::Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& local_addr, const struct sockaddr_in& peer_addr, bool is_keep_alive_connection) :
@@ -76,6 +77,11 @@ void Connection::Send(IOBuffer& buffer)
     buffer.RetrieveAll();
 }
 
+void Connection::Shutdown()
+{
+    util::ShutdownWrite(conn_sockfd_);
+}
+
 // 处理可读事件
 void Connection::HandleRead()
 {
@@ -133,4 +139,6 @@ void Connection::HandleClose()
     loop_->DelEventBase(conn_eventbase_);
     if (connection_close_cb_)
         connection_close_cb_(shared_from_this());
+    if (suicide_cb_)
+        suicide_cb_(shared_from_this());
 }

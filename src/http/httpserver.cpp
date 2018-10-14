@@ -1,13 +1,13 @@
 #include "httpserver.h"
-#include "httpcontext.h"
+#include "httpparser.h"
 #include "httprequest.h"
 #include "httpresponse.h"
-
+#include <iostream>
 void DefaultHttpCallback(const HttpRequest&, HttpResponse* response)
 {
     response->SetStatusCode(HttpResponse::NOT_FOUND);
     response->SetStatusMessage("Not Found");
-    response->SetCloseConnection(true);
+    //response->SetCloseConnection(true);
 }
 
 HttpServer::HttpServer(Looper* loop, int port, int thread_num) :
@@ -16,6 +16,7 @@ HttpServer::HttpServer(Looper* loop, int port, int thread_num) :
 {
     server_.SetConnectionEstablishedCB(std::bind(&HttpServer::OnConnection, this, std::placeholders::_1));
     server_.SetMessageArrivalCB(std::bind(&HttpServer::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
+    server_.SetConnectionCloseCB(std::bind(&HttpServer::OnClose, this, std::placeholders::_1));
 }
 
 void HttpServer::Start()
@@ -25,22 +26,25 @@ void HttpServer::Start()
 
 void HttpServer::OnConnection(const std::shared_ptr<Connection>& conn)
 {
-    conn->SetContext(HttpContext());
+    //conn->SetContext(HttpParser());
+    parser_map_[conn->GetFd()] = std::make_shared<HttpParser>();
 }
 
 void HttpServer::OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf)
 {
-    HttpContext* context = any_cast<HttpContext>(conn->GetMutableContext());
+    //HttpParser* parser = any_cast<HttpParser>(conn->GetMutableContext());
+    std::shared_ptr<HttpParser> parser = parser_map_[conn->GetFd()];
 
-    if (!context->ParseRequest(buf))
+    if (!parser->ParseRequest(buf))
     {
         conn->Send("HTTP/1.1 400 Bad Request\r\n\r\n");
+        conn->Shutdown();
     }
 
-    if (context->IsGotAll())
+    if (parser->IsGotAll())
     {
-        OnRequest(conn, context->GetRequest());
-        context->Reset();
+        OnRequest(conn, parser->GetRequest());
+        parser->Reset();
     }
 }
 
@@ -50,8 +54,27 @@ void HttpServer::OnRequest(const std::shared_ptr<Connection>& conn, const HttpRe
     bool close = connection == "close" || (request.GetVersion() == HttpRequest::HTTP10 && connection != "Keep-Alive");
 
     HttpResponse response(close);
+    auto handler = router_.Match(request);
+    if (handler != nullptr)
+    {
+        handler(request, &response);
+        std::cout << "match" << std::endl;
+    }
+    // if (router_.Match(request))
+    // {
+    //     std::cout << "match" << std::endl;
+    // }
     http_callback_(request, &response);
     IOBuffer buffer;
     response.AppendToBuffer(&buffer);
     conn->Send(buffer);
+    if (response.GetCloseConnection())
+    {
+        conn->Shutdown();
+    }
+}
+
+void HttpServer::OnClose(const std::shared_ptr<Connection>& conn)
+{
+    parser_map_.erase(conn->GetFd());
 }

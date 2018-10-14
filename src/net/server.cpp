@@ -55,7 +55,8 @@ void Server::HandelNewConnection()
     conn->SetConnectionEstablishedCB(connection_established_cb_);
     conn->SetMessageArrivalCB(message_arrival_cb_);
     conn->SetReplyCompleteCB(reply_complete_cb_);
-    conn->SetConnectionCloseCB(std::bind(&Server::RemoveConnection4CloseCB, this, std::placeholders::_1));
+    conn->SetConnectionCloseCB(connection_close_cb_);
+    conn->SetSuicideCB(std::bind(&Server::RemoveConnection4CloseCB, this, std::placeholders::_1));
 
     connection_map_[conn_fd] = conn;
 

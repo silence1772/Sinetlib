@@ -1,7 +1,7 @@
-#include "httpcontext.h"
+#include "httpparser.h"
 #include "iobuffer.h"
 
-bool HttpContext::ParseRequestLine(const char* begin, const char* end)
+bool HttpParser::ParseRequestLine(const char* begin, const char* end)
 {
     const char* start = begin;
     const char* space = std::find(start, end, ' ');
@@ -81,7 +81,7 @@ bool HttpContext::ParseRequestLine(const char* begin, const char* end)
     return true;
 }
 
-bool HttpContext::ParseRequest(IOBuffer* buf)
+bool HttpParser::ParseRequest(IOBuffer* buf)
 {
     bool has_more = true;
     size_t body_length = 0;

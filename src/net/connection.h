@@ -25,6 +25,8 @@ public:
     void Send(const std::string& message);
     void Send(IOBuffer& buffer);
 
+    void Shutdown();
+
     // 处理事件
     void HandleRead();
     void HandleWrite();
@@ -35,6 +37,7 @@ public:
     void SetMessageArrivalCB(const MessageCallback& cb) { message_arrival_cb_ = cb; }
     void SetReplyCompleteCB(const Callback& cb) { reply_complete_cb_ = cb; }
     void SetConnectionCloseCB(const Callback& cb) { connection_close_cb_ = cb; }
+    void SetSuicideCB(const Callback& cb) { suicide_cb_ = cb; }
 
     const int GetFd() const { return conn_sockfd_; }
     const IOBuffer& GetInputBuffer() const { return input_buffer_; }
@@ -63,6 +66,8 @@ private:
     Callback reply_complete_cb_;
     // 连接关闭
     Callback connection_close_cb_;
+    // 结束自己生命的回调
+    Callback suicide_cb_;
 
     // 输入输出缓冲区
     IOBuffer input_buffer_;

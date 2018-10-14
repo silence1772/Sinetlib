@@ -27,6 +27,7 @@ public:
     void SetConnectionEstablishedCB(Callback&& cb) { connection_established_cb_ = cb; }
     void SetMessageArrivalCB(MessageCallback&& cb) { message_arrival_cb_ = cb; }
     void SetReplyCompleteCB(Callback&& cb) { reply_complete_cb_ = cb; }
+    void SetConnectionCloseCB(Callback&& cb) { connection_close_cb_ = cb; }
 
 private:
     // 处理新连接
@@ -52,6 +53,7 @@ private:
     MessageCallback message_arrival_cb_;
     // 答复消息完成时
     Callback reply_complete_cb_;
+    Callback connection_close_cb_;
 
     // 是否为保活连接，即长连接
     bool is_keep_alive_connection_;

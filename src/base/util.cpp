@@ -79,6 +79,14 @@ void util::Close(int sockfd)
     }
 }
 
+void util::ShutdownWrite(int sockfd)
+{
+    if (shutdown(sockfd, SHUT_WR) < 0)
+    {
+        
+    }
+}
+
 void util::SetReuseAddr(int sockfd)
 {
     int optval = 1;
