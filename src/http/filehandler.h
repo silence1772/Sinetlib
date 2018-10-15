@@ -17,15 +17,12 @@ public:
         prefix_path_ = path;
     }
     
-    std::function<void(const HttpRequest&, HttpResponse* response)> GetHandler()
+    std::function<void(const HttpRequest&, std::map<std::string, std::string>&, HttpResponse* response)> GetHandler()
     {
-        return std::bind(&FileHandler::Handler, this, std::placeholders::_1, std::placeholders::_2);
+        return std::bind(&FileHandler::Handler, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
     }
 private:
-    void Handler(const HttpRequest&, HttpResponse* response)
-    {
-        std::cout << "handler file " << prefix_path_ << std::endl;
-    }
+    void Handler(const HttpRequest& request, std::map<std::string, std::string>& match_map, HttpResponse* response);
 
     std::string prefix_path_;
 };

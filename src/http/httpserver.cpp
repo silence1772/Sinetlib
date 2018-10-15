@@ -3,7 +3,7 @@
 #include "httprequest.h"
 #include "httpresponse.h"
 #include <iostream>
-void DefaultHttpCallback(const HttpRequest&, HttpResponse* response)
+void DefaultHttpCallback(const HttpRequest&, std::map<std::string, std::string>&, HttpResponse* response)
 {
     response->SetStatusCode(HttpResponse::NOT_FOUND);
     response->SetStatusMessage("Not Found");
@@ -54,17 +54,19 @@ void HttpServer::OnRequest(const std::shared_ptr<Connection>& conn, const HttpRe
     bool close = connection == "close" || (request.GetVersion() == HttpRequest::HTTP10 && connection != "Keep-Alive");
 
     HttpResponse response(close);
-    auto handler = router_.Match(request);
+    
+    std::map<std::string, std::string> match_map;
+    auto handler = router_.Match(request, &match_map);
     if (handler != nullptr)
     {
-        handler(request, &response);
+        handler(request, match_map, &response);
         std::cout << "match" << std::endl;
     }
     // if (router_.Match(request))
     // {
     //     std::cout << "match" << std::endl;
     // }
-    http_callback_(request, &response);
+    http_callback_(request, match_map, &response);
     IOBuffer buffer;
     response.AppendToBuffer(&buffer);
     conn->Send(buffer);

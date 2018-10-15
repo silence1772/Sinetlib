@@ -1,6 +1,8 @@
 #include "matcher.h"
 #include <regex>
 #include <iostream>
+#include <utility>
+
 Matcher::Matcher(std::string pattern, RegexpType regexp_type, std::string key) :
     is_valid_(true),
     regexp_type_(regexp_type),
@@ -70,13 +72,13 @@ void Matcher::Init(std::string pattern)
     }
 
     // std::cout << regexp_pattern_ << std::endl;
-    // for (auto i : regexp_names_)
-    // {
-    //     std::cout << i << std::endl;
-    // }
+    for (auto i : regexp_names_)
+    {
+        std::cout << i << std::endl;
+    }
 }
 
-bool Matcher::Match(const HttpRequest& request)
+bool Matcher::Match(const HttpRequest& request, std::map<std::string, std::string>* match_map)
 {
     std::regex reg(regexp_pattern_);
     std::smatch m;
@@ -87,6 +89,10 @@ bool Matcher::Match(const HttpRequest& request)
         {
             for (int i = 0; i < m.size(); ++i)
                 std::cout << m[i] << std::endl;
+            for (int i = regexp_names_.size()-1, j = m.size()-1; i >= 0 && j >= 0; --i, --j)
+            {
+                match_map->insert(std::make_pair(regexp_names_[i], m[j]));
+            }
             return true;
         }
     }

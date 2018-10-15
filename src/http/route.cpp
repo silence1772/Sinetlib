@@ -36,7 +36,7 @@ Route::RoutePtr Route::SetPath(std::string pattern)
 
 Route::RoutePtr Route::SetPrefix(std::string pattern)
 {
-    if (!AddRegexpMatcher(pattern + "{.*}", Matcher::REGEXP_TYPE_PREFIX))
+    if (!AddRegexpMatcher(pattern + "{file_path}", Matcher::REGEXP_TYPE_PREFIX))
     {
         std::cout << "add regexp matcher failed, please check it again" << std::endl;
         abort();
@@ -74,12 +74,15 @@ Route::RoutePtr Route::SetQuery(std::string key, std::string value)
     return shared_from_this();
 }
 
-bool Route::Match(const HttpRequest& request)
+bool Route::Match(const HttpRequest& request, std::map<std::string, std::string>* match_map)
 {
     for (auto matcher : matchers_)
     {
-        if (!matcher.Match(request))
+        if (!matcher.Match(request, match_map))
+        {
+            match_map->clear();
             return false;
+        }
     }
     return true;
 }

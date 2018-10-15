@@ -92,6 +92,11 @@ public:
         headers_[field] = value;
     }
 
+    std::string GetParm(std::string key)
+    {
+        return parm_[key];
+    }
+
     const char* GetMethodStr() const
     {
         const char* result = "UNKNOWN";

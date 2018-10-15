@@ -11,7 +11,7 @@ class Route : public std::enable_shared_from_this<Route>
 {
 public:
     using RoutePtr = std::shared_ptr<Route>;
-    using Handler = std::function<void(const HttpRequest&, HttpResponse*)>;
+    using Handler = std::function<void(const HttpRequest&, std::map<std::string, std::string>& match_map, HttpResponse*)>;
     //using Handler = std::function<void(const HttpRequest&)>;
     Route();
     ~Route();
@@ -27,7 +27,7 @@ public:
 
     Handler GetHandler() const { return handler_; }
 
-    bool Match(const HttpRequest& request);
+    bool Match(const HttpRequest& request, std::map<std::string, std::string>* match_map);
 
 private:
     Handler handler_;

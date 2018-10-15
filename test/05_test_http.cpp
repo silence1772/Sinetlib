@@ -26,7 +26,7 @@ int main()
     
     s.NewRoute()->
     SetPrefix("/file/")->
-    SetHandler(s.GetFileHandler("home/silence/mys"));
+    SetHandler(s.GetFileHandler("/home/silence/mys/"));
 
     s.Start();
 

@@ -21,7 +21,7 @@ public:
 
     bool IsValid() const { return is_valid_; }
 
-    bool Match(const HttpRequest& request);
+    bool Match(const HttpRequest& request, std::map<std::string, std::string>* match_map);
 
 private:
     void Init(std::string pattern);

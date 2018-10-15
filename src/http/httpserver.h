@@ -13,7 +13,7 @@ class HttpResponse;
 class HttpServer
 {
 public:
-    using HttpCallback = std::function<void(const HttpRequest&, HttpResponse*)>;
+    using HttpCallback = std::function<void(const HttpRequest&, std::map<std::string, std::string>&, HttpResponse*)>;
     HttpServer(Looper* loop, int port, int thread_num = 1);
 
     void SetHttpCallback(const HttpCallback& cb)
