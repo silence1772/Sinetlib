@@ -62,14 +62,19 @@ void HttpServer::OnRequest(const std::shared_ptr<Connection>& conn, const HttpRe
         handler(request, match_map, &response);
         std::cout << "match" << std::endl;
     }
+    else
+    {
+        http_callback_(request, match_map, &response);
+        response.AppendHeaderToBuffer();
+    }
     // if (router_.Match(request))
     // {
     //     std::cout << "match" << std::endl;
     // }
-    http_callback_(request, match_map, &response);
-    IOBuffer buffer;
-    response.AppendToBuffer(&buffer);
-    conn->Send(buffer);
+    //http_callback_(request, match_map, &response);
+    //IOBuffer buffer;
+    //response.AppendToBuffer();
+    conn->Send(response.GetBuffer());
     if (response.GetCloseConnection())
     {
         conn->Shutdown();

@@ -1,9 +1,8 @@
 #ifndef HTTP_RESPONSE_H
 #define HTTP_RESPONSE_H
-
+#include "iobuffer.h"
 #include <map>
 
-class IOBuffer;
 
 class HttpResponse
 {
@@ -53,8 +52,13 @@ public:
         body_ = body;
     }
 
-    void AppendToBuffer(IOBuffer* output) const;
-    
+    void AppendHeaderToBuffer();
+    void AppendBodyToBuffer(std::string& body);
+
+    IOBuffer& GetBuffer()
+    {
+        return buffer_;
+    }
 private:
     std::map<std::string, std::string> headers_;
     HttpStatusCode status_code_;
@@ -62,6 +66,8 @@ private:
 
     bool close_connection_;
     std::string body_;
+
+    IOBuffer buffer_;
 };
 
 #endif // HTTP_RESPONSE_H
