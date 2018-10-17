@@ -1,10 +1,12 @@
 #ifndef FILE_HANDLER_H
 #define FILE_HANDLER_H
 
-#include "httprequest.h"
-#include "httpresponse.h"
 #include <functional>
 #include <string>
+#include <map>
+
+class HttpRequest;
+class HttpResponse;
 
 class FileHandler
 {

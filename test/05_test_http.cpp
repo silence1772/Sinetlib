@@ -5,11 +5,16 @@
 #include <iostream>
 #include "timestamp.h"
 
-void OnHttpCallback(const HttpRequest& request, HttpResponse* response)
+void OnHttpCallback(const HttpRequest& request, std::map<std::string, std::string>& match_map, HttpResponse* response)
 {
-    // response->SetStatusCode(HttpResponse::NOT_FOUND);
-    // response->SetStatusMessage("Not Found");
-    // response->SetCloseConnection(true);
+    response->SetStatusCode(HttpResponse::OK);
+    response->SetStatusMessage("OK");
+    response->SetContentType("text/html");
+
+    std::string body = "temp test page";
+    response->AddHeader("Content-Length", std::to_string(body.size()));
+    response->AppendHeaderToBuffer();
+    response->AppendBodyToBuffer(body);
 }
 
 int main()
@@ -21,8 +26,24 @@ int main()
     s.NewRoute()->
     SetPath("/test/{name:[a-zA-Z]+}/");
 
+    s.NewRoute()
+    ->SetPath("/query")
+    ->SetQuery("my", "tt")
+    ->SetHeader("Connection", "keep-alive")
+    ->SetHandler(OnHttpCallback);
+
+    s.NewRoute()
+    ->SetPath("/header")
+    ->SetHeader("Connection", "keep-alive")
+    ->SetHandler(OnHttpCallback);
+
     s.NewRoute()->
-    SetPath("/my/{name}/");
+    SetMethod("GET")->
+    SetPath("/method")->
+    SetHandler(OnHttpCallback);
+
+    s.NewRoute()->
+    SetPath("/my/{name}/{xin}");
     
     s.NewRoute()->
     SetPrefix("/file/")->

@@ -3,7 +3,8 @@
 
 #include "timestamp.h"
 #include <map>
-
+#include <unordered_map>
+#include <iostream>
 class HttpRequest
 {
 public:
@@ -28,10 +29,7 @@ public:
         method_(INVALID),
         version_(UNKNOWN) {}
 
-    void SetVersion(Version v)
-    {
-        version_ = v;
-    }
+    void SetVersion(Version v) { version_ = v; }
 
     bool SetMethod(const char* start, const char* end)
     {
@@ -52,29 +50,28 @@ public:
         return method_ != INVALID;
     }
 
-    void SetPath(const char* start, const char* end)
+    void SetPath(const char* start, const char* end) { path_.assign(start, end); }
+
+    void SetQuery(const char* start, const char* end) { query_.assign(start, end);}
+
+    void SetBody(const char* start, const char* end) { body_.assign(start, end); }
+
+    void SetReceiveTime(Timestamp t) { receive_time_ = t; }
+
+    void AddQuery(const char* start, const char* equal, const char* end)
     {
-        path_.assign(start, end);
+        std::string field(start, equal++);
+        std::string value(equal, end);
+        querys_[field] = value;
     }
 
-    void SetQuery(const char* start, const char* end)
+    const std::string GetQuery(const std::string& field) const
     {
-        query_.assign(start, end);
-    }
-
-    void SetBody(const char* start, const char* end)
-    {
-        body_.assign(start, end);
-    }
-
-    void SetReceiveTime(Timestamp t)
-    {
-        receive_time_ = t;
-    }
-
-    void AddParm(std::string key, std::string value)
-    {
-        parm_[key] = value;
+        //return querys_[field];
+        auto i = querys_.find(field);
+        if (i != querys_.end())
+            return i->second;
+        return "";
     }
 
     void AddHeader(const char* start, const char* colon, const char* end)
@@ -90,11 +87,6 @@ public:
             value.resize(value.size() - 1);
         }
         headers_[field] = value;
-    }
-
-    std::string GetParm(std::string key)
-    {
-        return parm_[key];
     }
 
     const char* GetMethodStr() const
@@ -134,6 +126,7 @@ public:
         return result;
     }
 
+
     Version GetVersion() const { return version_; }
     Method GetMethod() const { return method_; }
     const std::string& GetPath() const { return path_; }
@@ -157,11 +150,11 @@ private:
     Version version_;
     std::string path_;
     std::string query_;
+    std::unordered_map<std::string, std::string> querys_;
     Timestamp receive_time_;
     std::map<std::string, std::string> headers_;
     std::string body_;
 
-    std::map<std::string, std::string> parm_;
 };
 
 #endif // HTTP_REQUEST_H

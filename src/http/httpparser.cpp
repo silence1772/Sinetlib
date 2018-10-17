@@ -7,6 +7,8 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end)
     const char* space = std::find(start, end, ' ');
 
     const char* question;
+    const char* ampersand;
+    const char* equal;
 
     bool succeed;
     
@@ -33,12 +35,32 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end)
                 space = std::find(start, end, ' ');
                 if (space != end)
                 {
+                    // 分割路径和参数
                     question = std::find(start, space, '?');
                     if (question != space)
                     {
+                        // 设置路径
                         request_.SetPath(start, question);
-                        request_.SetQuery(question, space);
+
+                        // 分割参数
+                        start = question + 1;
+                        while ((ampersand = std::find(start, space, '&')) != space)
+                        {
+                            // 取参数的名称和值
+                            equal = std::find(start, ampersand, '=');
+                            if (equal != ampersand)
+                                request_.AddQuery(start, equal, ampersand);
+                            start = ampersand + 1;
+                        }
+                        // 处理最后一个参数
+                        if (start != space)
+                        {
+                            equal = std::find(start, space, '=');
+                            if (equal != space)
+                                request_.AddQuery(start, equal, space);
+                        }
                     }
+                    // 没有参数
                     else
                     {
                         request_.SetPath(start, space);

@@ -1,7 +1,8 @@
 #include "filehandler.h"
+#include "httprequest.h"
+#include "httpresponse.h"
 #include "file.h"
 #include "util.h"
-#include <iostream>
 
 FileHandler::FileHandler() {}
 FileHandler::~FileHandler() {}
@@ -54,6 +55,7 @@ void FileHandler::Handler(const HttpRequest& request, std::map<std::string, std:
             response->AppendBodyToBuffer(body);
         }
     }
+    // 文件或目录不存在，返回404
     else
     {
         response->SetStatusCode(HttpResponse::NOT_FOUND);

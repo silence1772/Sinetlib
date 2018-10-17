@@ -3,16 +3,22 @@
 #include "httprequest.h"
 #include "httpresponse.h"
 #include <iostream>
-void DefaultHttpCallback(const HttpRequest&, std::map<std::string, std::string>&, HttpResponse* response)
+void PageNotFoundHandler(const HttpRequest&, std::map<std::string, std::string>&, HttpResponse* response)
 {
     response->SetStatusCode(HttpResponse::NOT_FOUND);
     response->SetStatusMessage("Not Found");
-    //response->SetCloseConnection(true);
+    response->SetCloseConnection(true);
+    response->SetContentType("text/html");
+
+    std::string body = "404 page not found";
+    response->AddHeader("Content-Length", std::to_string(body.size()));
+    response->AppendHeaderToBuffer();
+    response->AppendBodyToBuffer(body);
 }
 
 HttpServer::HttpServer(Looper* loop, int port, int thread_num) :
     server_(loop, port, thread_num),
-    http_callback_(DefaultHttpCallback)
+    http_callback_(PageNotFoundHandler)
 {
     server_.SetConnectionEstablishedCB(std::bind(&HttpServer::OnConnection, this, std::placeholders::_1));
     server_.SetMessageArrivalCB(std::bind(&HttpServer::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
@@ -65,7 +71,6 @@ void HttpServer::OnRequest(const std::shared_ptr<Connection>& conn, const HttpRe
     else
     {
         http_callback_(request, match_map, &response);
-        response.AppendHeaderToBuffer();
     }
     // if (router_.Match(request))
     // {
