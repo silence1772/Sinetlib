@@ -25,18 +25,29 @@ void FileHandler::Handler(const HttpRequest& request, std::map<std::string, std:
             // 将文件内容作为剩余的body部分添加进缓冲区
             file.ReadToBuffer(response->GetBuffer());
         }
+        // 列出目录下的内容
         else
         {
-            auto dir = file.ListDir();
-            for (auto& i : dir)
-            {
-                std::cout << i.GetName() << std::endl;
-            }
             response->SetStatusCode(HttpResponse::OK);
             response->SetStatusMessage("OK");
             response->SetContentType("text/html");
 
-            std::string body = "<pre><a href=\"od9XS5AoRlmj-HZtUGKJUk2EHsWM/\">od9XS5AoRlmj-HZtUGKJUk2EHsWM/</a></pre>";
+            // 拼接成如下html格式
+            // <pre>
+            // <a href="aa/">aa/</a>
+            // <a href="bb/">bb/</a>
+            // <a href="cc.c">cc.c</a>
+            // </pre>
+            std::string body = "<pre>\n";
+            std::string slash = "/";
+            auto dir = file.ListDir();
+            for (auto& i : dir)
+            {
+                slash = i.IsDir() ? "/" : "";
+                body += "<a href=\"" + i.GetName() + slash + "\">" + i.GetName() + slash + "</a>\n";
+            }
+            body += "</pre>";
+            // 设置body长度
             response->AddHeader("Content-Length", std::to_string(body.size()));
 
             response->AppendHeaderToBuffer();
@@ -48,6 +59,11 @@ void FileHandler::Handler(const HttpRequest& request, std::map<std::string, std:
         response->SetStatusCode(HttpResponse::NOT_FOUND);
         response->SetStatusMessage("Not Found");
         response->SetCloseConnection(true);
+        response->SetContentType("text/html");
+
+        std::string body = "404 page not found";
+        response->AddHeader("Content-Length", std::to_string(body.size()));
         response->AppendHeaderToBuffer();
+        response->AppendBodyToBuffer(body);
     }
 }

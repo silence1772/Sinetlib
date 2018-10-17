@@ -39,7 +39,8 @@ public:
 
     void SetContentType(const std::string& content_type)
     {
-        AddHeader("Content-Type", content_type);
+        // linux下文件编码默认为utf-8,加上此句避免浏览器中文乱码
+        AddHeader("Content-Type", content_type + "; charset=utf-8");
     }
 
     void AddHeader(const std::string& field, const std::string& value)
