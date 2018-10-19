@@ -2,38 +2,21 @@
 #define ROUTER_H
 
 #include "route.h"
-#include <memory>
-
 
 class Router
 {
 public:
-    using RoutePtr = std::shared_ptr<Route>;
     Router();
     ~Router();
     
-    RoutePtr NewRoute()
-    {
-        auto r = std::make_shared<Route>();
-        routes_.push_back(r);
-        return r;
-    }
-
-    Route::Handler Match(const HttpRequest& request, std::map<std::string, std::string>* match_map)
-    {
-        for (auto &r : routes_)
-        {
-            if (r->Match(request, match_map))
-            {
-                return r->GetHandler();
-            }
-        }
-        return nullptr;
-    }
-
+    // 返回新的子路由
+    Route::RoutePtr NewRoute();
+    // 遍历所有的路由是否有匹配
+    Route::Handler Match(const HttpRequest& request, std::unordered_map<std::string, std::string>* match_map);
     
 private:
-    std::vector<RoutePtr> routes_;
+    // 所有的子路由
+    std::vector<Route::RoutePtr> routes_;
 };
 
 #endif // ROUTER_H

@@ -18,7 +18,7 @@ void Matcher::Init(std::string pattern)
     // 判断是否成形良好，即{}是否配对
     int level = 0, index = 0;
     std::vector<int> indexs;
-    for (int i = 0; i < pattern.size(); ++i)
+    for (int i = 0; i < (int)pattern.size(); ++i)
     {
         if (pattern[i] == '{')
         {
@@ -48,7 +48,7 @@ void Matcher::Init(std::string pattern)
     // 将类似{name:[a-z]+}中name提取出来，然后将正则条件[a-z]+加()后添加到正则表达式里面
     // aa{name:[a-z]+}cc 经过处理后得到正则表达式 aa([a-z]+)cc
     int end = 0;
-    for (int i = 0; i < indexs.size(); i += 2)
+    for (int i = 0; i < (int)indexs.size(); i += 2)
     {
         std::string raw = pattern.substr(end, indexs[i] - end);
         end = indexs[i+1];
@@ -72,13 +72,13 @@ void Matcher::Init(std::string pattern)
         }
     }
     // 处理余下的字符串
-    if (end < pattern.size())
+    if (end < (int)pattern.size())
     {
         regexp_pattern_.append(pattern.substr(end, pattern.size() - end));
     }
 }
 
-bool Matcher::Match(const HttpRequest& request, std::map<std::string, std::string>* match_map)
+bool Matcher::Match(const HttpRequest& request, std::unordered_map<std::string, std::string>* match_map)
 {
     std::regex reg(regexp_pattern_);
     std::smatch m;

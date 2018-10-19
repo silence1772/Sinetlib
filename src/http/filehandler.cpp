@@ -7,7 +7,7 @@
 FileHandler::FileHandler() {}
 FileHandler::~FileHandler() {}
 
-void FileHandler::Handler(const HttpRequest& request, std::map<std::string, std::string>& match_map, HttpResponse* response)
+void FileHandler::Handler(const HttpRequest& request, std::unordered_map<std::string, std::string>& match_map, HttpResponse* response)
 {
     // 映射的目录路径加上url中的路径等于实际路径
     File file(prefix_path_ + match_map["file_path"]);

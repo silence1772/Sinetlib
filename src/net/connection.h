@@ -2,7 +2,6 @@
 #define CONNNECTION_H
 
 #include "iobuffer.h"
-#include "anyone.h"
 #include <functional>
 #include <memory>
 
@@ -42,10 +41,6 @@ public:
     const int GetFd() const { return conn_sockfd_; }
     const IOBuffer& GetInputBuffer() const { return input_buffer_; }
     const IOBuffer& GetOutputBuffer() const { return output_buffer_; }
-
-    void SetContext(const any& context) { context_ = context; }
-    const any& GetContext() const { return context_; }
-    any* GetMutableContext() { return &context_; }
     
 private:
     Looper* loop_;
@@ -75,8 +70,6 @@ private:
 
     // 是否为保活连接，即长连接
     bool is_keep_alive_connection_;
-
-    any context_;
 };
 
 #endif // CONNNECTION_H

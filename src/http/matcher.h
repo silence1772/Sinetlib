@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_map>
 
 class HttpRequest;
 
@@ -30,7 +30,7 @@ public:
     // 是否有效
     bool IsValid() const { return is_valid_; }
     // 是否匹配
-    bool Match(const HttpRequest& request, std::map<std::string, std::string>* match_map);
+    bool Match(const HttpRequest& request, std::unordered_map<std::string, std::string>* match_map);
 
 private:
     // 初始化

@@ -1,8 +1,11 @@
 #include "httpparser.h"
 #include "iobuffer.h"
 
+// 解析请求行
 bool HttpParser::ParseRequestLine(const char* begin, const char* end)
 {
+    // 状态机需要的各个变量
+    // 定义在switch语句外以避免编译器warning
     const char* start = begin;
     const char* space = std::find(start, end, ' ');
 
@@ -12,12 +15,13 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end)
 
     bool succeed;
     
+    // 解析http请求的第一行，如 GET /test HTTP/1.1
     while (request_line_state_ != REQUEST_LINE_STATE_FINISH)
     {
         switch(request_line_state_)
         {
+            // 解析方法头
             case REQUEST_LINE_STATE_METHOD:
-                // 移到外面以避免warning
                 //start = begin;
                 //space = std::find(start, end, ' ');
                 if (space != end && request_.SetMethod(start, space))
@@ -30,6 +34,7 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end)
                     return false;
                 }
 
+            // 解析请求路径
             case REQUEST_LINE_STATE_URL:
                 start = space + 1;
                 space = std::find(start, end, ' ');
@@ -73,6 +78,7 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end)
                     return false;
                 }
 
+            // 解析HTTP版本
             case REQUEST_LINE_STATE_VERSION:
                 start = space + 1;
                 succeed = ( end-start == 8 && std::equal(start, end-1, "HTTP/1.") );
@@ -103,10 +109,10 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end)
     return true;
 }
 
+// 主状态机，解析整个请求
 bool HttpParser::ParseRequest(IOBuffer* buf)
 {
     bool has_more = true;
-    size_t body_length = 0;
 
     const char* crlf;
     bool ok;
@@ -116,10 +122,14 @@ bool HttpParser::ParseRequest(IOBuffer* buf)
     const char* start;
     const char* end;
 
+    const char* ampersand;
+    const char* equal;
+
     while (has_more)
     {
         switch(state_)
         {
+            // 解析请求行
             case PARSE_STATE_REQUESTLINE:
                 crlf = buf->FindCRLF();
                 if (crlf)
@@ -142,6 +152,7 @@ bool HttpParser::ParseRequest(IOBuffer* buf)
                 }
                 break;
 
+            // 解析头部
             case PARSE_STATE_HEADER:
                 crlf = buf->FindCRLF();
                 if (crlf)
@@ -153,6 +164,7 @@ bool HttpParser::ParseRequest(IOBuffer* buf)
                     }
                     else
                     {
+                        // 设置消息主体长度
                         if (request_.GetHeader("Content-Length").size() == 0)
                         {
                             state_ = PARSE_STATE_GOTALL;
@@ -160,7 +172,7 @@ bool HttpParser::ParseRequest(IOBuffer* buf)
                         }
                         else
                         {
-                            body_length = stoi(request_.GetHeader("Content-Length"));
+                            body_length_ = stoi(request_.GetHeader("Content-Length"));
                             state_ = PARSE_STATE_BODY;
                         }
                     }
@@ -172,12 +184,30 @@ bool HttpParser::ParseRequest(IOBuffer* buf)
                 }
                 break;
 
+            // 解析消息主体
             case PARSE_STATE_BODY:
-                if (buf->GetReadableSize() >= body_length)
+                if (buf->GetReadableSize() >= body_length_)
                 {
                     start = buf->GetReadablePtr();
-                    end = buf->GetReadablePtr() + body_length;
-                    request_.SetBody(start, end);
+                    end = buf->GetReadablePtr() + body_length_;
+
+                    // 只支持application/x-www-form-urlencoded类型表单数据
+                    while ((ampersand = std::find(start, end, '&')) != end)
+                    {
+                        // 取参数的名称和值
+                        equal = std::find(start, ampersand, '=');
+                        if (equal != ampersand)
+                            request_.AddQuery(start, equal, ampersand);
+                        start = ampersand + 1;
+                    }
+                    // 处理最后一个参数
+                    if (start != end)
+                    {
+                        equal = std::find(start, end, '=');
+                        if (equal != end)
+                            request_.AddQuery(start, equal, end);
+                    }
+
                     state_ = PARSE_STATE_GOTALL;
                     has_more = false;
                 }

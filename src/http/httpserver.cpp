@@ -2,8 +2,10 @@
 #include "httpparser.h"
 #include "httprequest.h"
 #include "httpresponse.h"
-#include <iostream>
-void PageNotFoundHandler(const HttpRequest&, std::map<std::string, std::string>&, HttpResponse* response)
+
+
+// 默认处理
+void PageNotFoundHandler(const HttpRequest&, std::unordered_map<std::string, std::string>&, HttpResponse* response)
 {
     response->SetStatusCode(HttpResponse::NOT_FOUND);
     response->SetStatusMessage("Not Found");
@@ -16,9 +18,10 @@ void PageNotFoundHandler(const HttpRequest&, std::map<std::string, std::string>&
     response->AppendBodyToBuffer(body);
 }
 
+
 HttpServer::HttpServer(Looper* loop, int port, int thread_num) :
     server_(loop, port, thread_num),
-    http_callback_(PageNotFoundHandler)
+    default_handler_(PageNotFoundHandler)
 {
     server_.SetConnectionEstablishedCB(std::bind(&HttpServer::OnConnection, this, std::placeholders::_1));
     server_.SetMessageArrivalCB(std::bind(&HttpServer::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
@@ -32,15 +35,16 @@ void HttpServer::Start()
 
 void HttpServer::OnConnection(const std::shared_ptr<Connection>& conn)
 {
-    //conn->SetContext(HttpParser());
+    // 建立解析器
     parser_map_[conn->GetFd()] = std::make_shared<HttpParser>();
 }
 
 void HttpServer::OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf)
 {
-    //HttpParser* parser = any_cast<HttpParser>(conn->GetMutableContext());
+    // 取出连接对应的解析器
     std::shared_ptr<HttpParser> parser = parser_map_[conn->GetFd()];
 
+    // 无效请求
     if (!parser->ParseRequest(buf))
     {
         conn->Send("HTTP/1.1 400 Bad Request\r\n\r\n");
@@ -50,36 +54,35 @@ void HttpServer::OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* bu
     if (parser->IsGotAll())
     {
         OnRequest(conn, parser->GetRequest());
+        // 处理完后重置解析器初始状态
         parser->Reset();
     }
 }
 
 void HttpServer::OnRequest(const std::shared_ptr<Connection>& conn, const HttpRequest& request)
 {
+    // 判断是否为长连接
     const std::string& connection = request.GetHeader("Connection");
-    bool close = connection == "close" || (request.GetVersion() == HttpRequest::HTTP10 && connection != "Keep-Alive");
+    bool close = connection == "close" || (request.GetVersion() == HttpRequest::HTTP10 && connection != "keep-alive");
 
     HttpResponse response(close);
     
-    std::map<std::string, std::string> match_map;
+    // 用来提取参数的map
+    std::unordered_map<std::string, std::string> match_map;
+    // 由路由器进行逐一匹配，找到合适的路由
     auto handler = router_.Match(request, &match_map);
     if (handler != nullptr)
     {
         handler(request, match_map, &response);
-        std::cout << "match" << std::endl;
     }
     else
     {
-        http_callback_(request, match_map, &response);
+        default_handler_(request, match_map, &response);
     }
-    // if (router_.Match(request))
-    // {
-    //     std::cout << "match" << std::endl;
-    // }
-    //http_callback_(request, match_map, &response);
-    //IOBuffer buffer;
-    //response.AppendToBuffer();
+
+    // 发送响应内容
     conn->Send(response.GetBuffer());
+    // 如果不是长连接就关闭底层的tcp连接
     if (response.GetCloseConnection())
     {
         conn->Shutdown();
@@ -88,5 +91,6 @@ void HttpServer::OnRequest(const std::shared_ptr<Connection>& conn, const HttpRe
 
 void HttpServer::OnClose(const std::shared_ptr<Connection>& conn)
 {
+    // 清理连接对应的解析器
     parser_map_.erase(conn->GetFd());
 }

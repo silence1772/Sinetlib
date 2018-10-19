@@ -91,9 +91,9 @@ std::string File::GetName()
 std::string File::GetExt()
 {
     std::string name = GetName();
-    size_t p = name.find_last_of('.');
+    int p = name.find_last_of('.');
     // 没有拓展名或者为空直接返回“”
-    if(p == -1 || p == name.length() - 1)
+    if(p == -1 || p == (int)name.length() - 1)
         return "";
     else
     {
@@ -121,7 +121,6 @@ off_t File::GetSize()
 
 std::string File::ReadAsText()
 {
-    char buffer[4096];
     std::ifstream in(path_, std::ios_base::in);
     if(!in) 
         return "";

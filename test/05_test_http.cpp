@@ -1,11 +1,10 @@
 #include "httpserver.h"
 #include "looper.h"
 #include "iobuffer.h"
-#include "currentthread.h"
 #include <iostream>
 #include "timestamp.h"
 
-void OnHttpCallback(const HttpRequest& request, std::map<std::string, std::string>& match_map, HttpResponse* response)
+void OnHttpCallback(const HttpRequest& request, std::unordered_map<std::string, std::string>& match_map, HttpResponse* response)
 {
     response->SetStatusCode(HttpResponse::OK);
     response->SetStatusMessage("OK");
