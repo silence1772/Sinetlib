@@ -19,13 +19,12 @@ int main()
 
     s.NewRoute()
     ->SetPath("/path/{name:[a-zA-Z]+}")
-    ->SetQuery("query", "t")
     ->SetHeader("Connection", "keep-alive")
     ->SetHandler(OnHttpCallback);
     
     s.NewRoute()
     ->SetPrefix("/file/")
-    ->SetHandler(s.GetFileHandler("/home/silence/mys/"));
+    ->SetHandler(s.GetFileHandler("/home/"));
 
     s.Start();
     loop.Start();
