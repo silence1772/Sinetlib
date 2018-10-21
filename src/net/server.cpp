@@ -5,11 +5,10 @@
 #include <string.h> //bzero
 #include <netinet/in.h>
 
-Server::Server(Looper* loop, int port, int thread_num, bool is_keep_alive_connection) :
+Server::Server(Looper* loop, int port, int thread_num) :
     loop_(loop),
     thread_pool_(new ThreadPool(loop_, thread_num)),
-    accept_sockfd_(util::Create()),
-    is_keep_alive_connection_(is_keep_alive_connection)
+    accept_sockfd_(util::Create())
 {
     // 创建服务器地址结构
     bzero(&addr_, sizeof(addr_));
@@ -23,8 +22,7 @@ Server::Server(Looper* loop, int port, int thread_num, bool is_keep_alive_connec
     
     // 初始化事件
     accept_eventbase_ = std::make_shared<EventBase>(accept_sockfd_);
-    accept_eventbase_->SetReadCallback(std::bind(&Server::HandelNewConnection, this));
-    accept_eventbase_->EnableEdgeTriggered();
+    accept_eventbase_->SetReadCallback(std::bind(&Server::HandelNewConnection, this, std::placeholders::_1));
     accept_eventbase_->EnableReadEvents();
 }
 
@@ -42,7 +40,7 @@ void Server::Start()
 }
 
 // 处理新连接
-void Server::HandelNewConnection()
+void Server::HandelNewConnection(Timestamp t)
 {
     // 客户端地址结构
     struct sockaddr_in peer_addr;
@@ -51,7 +49,7 @@ void Server::HandelNewConnection()
 
     // 从线程池中取用线程给连接使用
     Looper* io_loop = thread_pool_->TakeOutLoop();
-    std::shared_ptr<Connection> conn = std::make_shared<Connection>(io_loop, conn_fd, addr_, peer_addr, is_keep_alive_connection_);
+    std::shared_ptr<Connection> conn = std::make_shared<Connection>(io_loop, conn_fd, addr_, peer_addr);
     conn->SetConnectionEstablishedCB(connection_established_cb_);
     conn->SetMessageArrivalCB(message_arrival_cb_);
     conn->SetReplyCompleteCB(reply_complete_cb_);

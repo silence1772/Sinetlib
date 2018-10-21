@@ -24,7 +24,7 @@ HttpServer::HttpServer(Looper* loop, int port, int thread_num) :
     default_handler_(PageNotFoundHandler)
 {
     server_.SetConnectionEstablishedCB(std::bind(&HttpServer::OnConnection, this, std::placeholders::_1));
-    server_.SetMessageArrivalCB(std::bind(&HttpServer::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
+    server_.SetMessageArrivalCB(std::bind(&HttpServer::OnMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     server_.SetConnectionCloseCB(std::bind(&HttpServer::OnClose, this, std::placeholders::_1));
 }
 
@@ -39,13 +39,13 @@ void HttpServer::OnConnection(const std::shared_ptr<Connection>& conn)
     parser_map_[conn->GetFd()] = std::make_shared<HttpParser>();
 }
 
-void HttpServer::OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf)
+void HttpServer::OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf, Timestamp t)
 {
     // 取出连接对应的解析器
     std::shared_ptr<HttpParser> parser = parser_map_[conn->GetFd()];
 
     // 无效请求
-    if (!parser->ParseRequest(buf))
+    if (!parser->ParseRequest(buf, t))
     {
         conn->Send("HTTP/1.1 400 Bad Request\r\n\r\n");
         conn->Shutdown();

@@ -1,8 +1,4 @@
 #include "httpserver.h"
-#include "looper.h"
-#include "iobuffer.h"
-#include <iostream>
-#include "timestamp.h"
 
 void OnHttpCallback(const HttpRequest& request, std::unordered_map<std::string, std::string>& match_map, HttpResponse* response)
 {
@@ -19,36 +15,18 @@ void OnHttpCallback(const HttpRequest& request, std::unordered_map<std::string, 
 int main()
 {
     Looper loop;
-
-    HttpServer s(&loop, 8888, 3);
-    //s.SetHttpCallback(OnCallback);
-    s.NewRoute()->
-    SetPath("/test/{name:[a-zA-Z]+}/");
+    HttpServer s(&loop, 8888, 4);
 
     s.NewRoute()
-    ->SetPath("/query")
-    ->SetQuery("my", "tt")
+    ->SetPath("/path/{name:[a-zA-Z]+}")
+    ->SetQuery("query", "t")
     ->SetHeader("Connection", "keep-alive")
     ->SetHandler(OnHttpCallback);
-
-    s.NewRoute()
-    ->SetPath("/header")
-    ->SetHeader("Connection", "keep-alive")
-    ->SetHandler(OnHttpCallback);
-
-    s.NewRoute()->
-    SetMethod("GET")->
-    SetPath("/method")->
-    SetHandler(OnHttpCallback);
-
-    s.NewRoute()->
-    SetPath("/my/{name}/{xin}");
     
-    s.NewRoute()->
-    SetPrefix("/file/")->
-    SetHandler(s.GetFileHandler("/home/silence/mys/"));
+    s.NewRoute()
+    ->SetPrefix("/file/")
+    ->SetHandler(s.GetFileHandler("/home/silence/mys/"));
 
     s.Start();
-
     loop.Start();
 }

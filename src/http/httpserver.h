@@ -4,6 +4,7 @@
 #include "server.h"
 #include "router.h"
 #include "filehandler.h"
+#include "timestamp.h"
 #include <unordered_map>
 
 class HttpParser;
@@ -29,7 +30,7 @@ public:
 
 private:
     void OnConnection(const std::shared_ptr<Connection>& conn);
-    void OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf);
+    void OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf, Timestamp t);
     void OnRequest(const std::shared_ptr<Connection>& conn, const HttpRequest& request);
     void OnClose(const std::shared_ptr<Connection>& conn);
 

@@ -4,6 +4,7 @@
 #include "looper.h"
 #include "connection.h"
 #include "iobuffer.h"
+#include "timestamp.h"
 #include <netinet/in.h>
 #include <memory>
 #include <map>
@@ -15,23 +16,20 @@ class EventBase;
 class Server
 {
 public:
-    using Callback = std::function<void(const std::shared_ptr<Connection>&)>;
-    using MessageCallback = std::function<void(const std::shared_ptr<Connection>&, IOBuffer*)>;
-
-    Server(Looper* loop, int port, int thread_num = 1, bool is_keep_alive_connection = false);
+    Server(Looper* loop, int port, int thread_num = 1);
     ~Server();
     
     void Start();
 
     // 设置回调
-    void SetConnectionEstablishedCB(Callback&& cb) { connection_established_cb_ = cb; }
-    void SetMessageArrivalCB(MessageCallback&& cb) { message_arrival_cb_ = cb; }
-    void SetReplyCompleteCB(Callback&& cb) { reply_complete_cb_ = cb; }
-    void SetConnectionCloseCB(Callback&& cb) { connection_close_cb_ = cb; }
+    void SetConnectionEstablishedCB(Connection::Callback&& cb) { connection_established_cb_ = cb; }
+    void SetMessageArrivalCB(Connection::MessageCallback&& cb) { message_arrival_cb_ = cb; }
+    void SetReplyCompleteCB(Connection::Callback&& cb) { reply_complete_cb_ = cb; }
+    void SetConnectionCloseCB(Connection::Callback&& cb) { connection_close_cb_ = cb; }
 
 private:
     // 处理新连接
-    void HandelNewConnection();
+    void HandelNewConnection(Timestamp t);
 
     // 移除连接
     void RemoveConnection4CloseCB(const std::shared_ptr<Connection>& conn);
@@ -48,15 +46,12 @@ private:
     std::map<int, std::shared_ptr<Connection>> connection_map_;
 
     // 连接建立后的回调函数
-    Callback connection_established_cb_;
+    Connection::Callback connection_established_cb_;
     // 新消息到来时
-    MessageCallback message_arrival_cb_;
+    Connection::MessageCallback message_arrival_cb_;
     // 答复消息完成时
-    Callback reply_complete_cb_;
-    Callback connection_close_cb_;
-
-    // 是否为保活连接，即长连接
-    bool is_keep_alive_connection_;
+    Connection::Callback reply_complete_cb_;
+    Connection::Callback connection_close_cb_;
 };
 
 #endif // SERVER_H

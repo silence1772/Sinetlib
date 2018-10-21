@@ -3,7 +3,7 @@
 #include "asynclogger.h"
 #include <pthread.h>
 
-// ------------------------------------start
+
 // 初始化日志等级
 Logger::LogLevel InitLogLevel()
 {
@@ -21,10 +21,10 @@ Logger::LogLevel Logger::GetGlobalLogLevel()
 {
     return g_loglevel;
 }
-// --------------------------------------end
 
 
-// ------------------------------------start
+
+
 // 默认输出函数，输出至标准输出
 void DefaultOutput(const char* msg, int len)
 {
@@ -70,10 +70,10 @@ void Logger::SetFlush(FlushFunc flush)
 {
     g_flush = flush;
 }
-// --------------------------------------end
 
 
-// ------------------------------------start
+
+
 // 日志等级字符串数组，用于输出
 const char* g_loglevel_name[Logger::NUM_LOG_LEVELS] =
 {
@@ -107,4 +107,3 @@ Logger::~Logger()
         abort();
     }
 }
-// --------------------------------------end

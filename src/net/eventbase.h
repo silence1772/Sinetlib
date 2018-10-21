@@ -1,6 +1,7 @@
 #ifndef EVENTBASE_H
 #define EVENTBASE_H
 
+#include "timestamp.h"
 #include <sys/epoll.h>
 #include <functional>
 
@@ -10,25 +11,26 @@ class EventBase
 public:
     // c++11用法，类似typedef
     using Callback = std::function<void()>;
+    using ReadCallback = std::function<void(Timestamp)>;
 
     // 传入参数为文件描述符
     EventBase(int fd);
     ~EventBase();
 
     // 边沿触发
-    void EnableEdgeTriggered() { events_ |= EPOLLET; }
+    //void EnableEdgeTriggered() { events_ |= EPOLLET; }
     // 关注可读事件
     void EnableReadEvents()    { events_ |= (EPOLLIN | EPOLLPRI); }
     // 关注可写事件
     void EnableWriteEvents()   { events_ |= EPOLLOUT; }
-    void EnableCloseEvents()   {  }//events_ |= EPOLLRDHUP;
+    //void EnableCloseEvents()   {  }//events_ |= EPOLLRDHUP;
 
     // 取消关注相应事件
     void DisableReadEvents()   { events_ &= ~(EPOLLIN | EPOLLPRI); }
     void DisableWriteEvents()  { events_ &= ~EPOLLOUT; }
 
     // 设置相应的事件处理函数
-    void SetReadCallback(Callback&& cb)  { read_callback_ = cb; }
+    void SetReadCallback(ReadCallback&& cb)  { read_callback_ = cb; }
     void SetWriteCallback(Callback&& cb) { write_callback_ = cb; }
     void SetErrorCallback(Callback&& cb) { error_callback_ = cb; }
     void SetCloseCallback(Callback&& cb) { close_callback_ = cb; }
@@ -55,7 +57,7 @@ private:
     int revents_;
 
     // 事件处理函数
-    Callback read_callback_;
+    ReadCallback read_callback_;
     Callback write_callback_;
     Callback error_callback_;
     Callback close_callback_;

@@ -2,6 +2,7 @@
 #define CONNNECTION_H
 
 #include "iobuffer.h"
+#include "timestamp.h"
 #include <functional>
 #include <memory>
 
@@ -12,9 +13,9 @@ class Connection : public std::enable_shared_from_this<Connection>
 {
 public:
     using Callback = std::function<void(const std::shared_ptr<Connection>&)>;
-    using MessageCallback = std::function<void(const std::shared_ptr<Connection>&, IOBuffer*)>;
+    using MessageCallback = std::function<void(const std::shared_ptr<Connection>&, IOBuffer*, Timestamp)>;
 
-    Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& local_addr, const struct sockaddr_in& peer_addr, bool is_keep_alive_connection);
+    Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& local_addr, const struct sockaddr_in& peer_addr);
     ~Connection();
 
     // 在loop上注册事件，连接建立时调用
@@ -27,7 +28,7 @@ public:
     void Shutdown();
 
     // 处理事件
-    void HandleRead();
+    void HandleRead(Timestamp t);
     void HandleWrite();
     void HandleClose();
 
@@ -67,9 +68,6 @@ private:
     // 输入输出缓冲区
     IOBuffer input_buffer_;
     IOBuffer output_buffer_;
-
-    // 是否为保活连接，即长连接
-    bool is_keep_alive_connection_;
 };
 
 #endif // CONNNECTION_H

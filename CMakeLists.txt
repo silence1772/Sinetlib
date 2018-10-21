@@ -43,7 +43,7 @@ foreach(SUB_DIR ${SRC_LIST})
 	# 将目录下的头文件（匹配*.h）安装到CMAKE_INSTALL_PREFIX/INSTALL_PATH_INCLUDE
 	# 前者我们没定义，默认是/usr/local，因此实际安装路径为/usr/local/include
 	# 该动作会在make执行完后执行make install时执行，实际上就是把这些头文件复制到对应目录，这样别人在使用我们的库时就可以直接像系统头文件一样使用
-	install(DIRECTORY src/${SUB_DIR} DESTINATION ${INSTALL_PATH_INCLUDE} FILES_MATCHING PATTERN "*.h")
+	install(DIRECTORY src/${SUB_DIR}/ DESTINATION ${INSTALL_PATH_INCLUDE} FILES_MATCHING PATTERN "*.h")
 endforeach()
 
 # 将所有源文件打包成动态库Sinetlib_shared
@@ -64,5 +64,5 @@ set_target_properties(${CMAKE_PROJECT_NAME}_static PROPERTIES OUTPUT_NAME "${CMA
 # 安装到/usr/local/lib，同样的，在执行make install时才会执行
 install(TARGETS ${CMAKE_PROJECT_NAME}_static ARCHIVE DESTINATION ${INSTALL_PATH_LIB})
 
-# 添加子目录，这样test目录下的CMakeLists.txt也会被执行
-add_subdirectory(test)
+# 添加子目录，这样example目录下的CMakeLists.txt也会被执行
+add_subdirectory(example)

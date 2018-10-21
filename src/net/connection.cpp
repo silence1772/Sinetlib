@@ -5,18 +5,16 @@
 #include "util.h"
 #include <unistd.h>
 
-Connection::Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& local_addr, const struct sockaddr_in& peer_addr, bool is_keep_alive_connection) :
+Connection::Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& local_addr, const struct sockaddr_in& peer_addr) :
     loop_(loop),
     conn_sockfd_(conn_sockfd),
     conn_eventbase_(new EventBase(conn_sockfd_)),
     local_addr_(local_addr),
-    peer_addr_(peer_addr),
-    is_keep_alive_connection_(is_keep_alive_connection)
+    peer_addr_(peer_addr)
 {
-    conn_eventbase_->SetReadCallback(std::bind(&Connection::HandleRead, this));
+    conn_eventbase_->SetReadCallback(std::bind(&Connection::HandleRead, this, std::placeholders::_1));
     conn_eventbase_->SetWriteCallback(std::bind(&Connection::HandleWrite, this));
     conn_eventbase_->SetCloseCallback(std::bind(&Connection::HandleClose, this));
-    conn_eventbase_->EnableEdgeTriggered();
     conn_eventbase_->EnableReadEvents();
 }
 
@@ -83,23 +81,17 @@ void Connection::Shutdown()
 }
 
 // 处理可读事件
-void Connection::HandleRead()
+void Connection::HandleRead(Timestamp t)
 {
     int saved_errno = 0;
     ssize_t n = 0;
-    if (is_keep_alive_connection_)
-    {
-        n = input_buffer_.ReadFdOnce(conn_eventbase_->GetFd(), &saved_errno);
-    }
-    else
-    {
-        n = input_buffer_.ReadFdRepeatedly(conn_eventbase_->GetFd(), &saved_errno);
-    }
+
+    n = input_buffer_.ReadFd(conn_eventbase_->GetFd(), &saved_errno);
    
     if (n > 0)
     {
         if (message_arrival_cb_)
-            message_arrival_cb_(shared_from_this(), &input_buffer_);
+            message_arrival_cb_(shared_from_this(), &input_buffer_, t);
     }
     else
     {

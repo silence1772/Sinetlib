@@ -252,8 +252,8 @@ public:
     }
 
     // 读取数据进缓冲区
-    ssize_t ReadFdOnce(int fd, int* saved_errno);
-    ssize_t ReadFdRepeatedly(int fd, int* saved_errno);
+    ssize_t ReadFd(int fd, int* saved_errno);
+    //ssize_t ReadFdRepeatedly(int fd, int* saved_errno);
 private:
     // 取缓冲区起始位置指针
     char* GetBegin() { return &*buffer_.begin(); }

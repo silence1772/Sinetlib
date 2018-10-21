@@ -39,8 +39,7 @@ public:
         request_line_state_(REQUEST_LINE_STATE_METHOD),
         body_length_(0) {}
     
-    //bool ParseRequest(IOBuffer* buf, Timestamp receive_time);
-    bool ParseRequest(IOBuffer* buf);
+    bool ParseRequest(IOBuffer* buf, Timestamp receive_time);
 
     bool IsGotAll() const { return state_ == PARSE_STATE_GOTALL; }
 

@@ -110,7 +110,7 @@ bool HttpParser::ParseRequestLine(const char* begin, const char* end)
 }
 
 // 主状态机，解析整个请求
-bool HttpParser::ParseRequest(IOBuffer* buf)
+bool HttpParser::ParseRequest(IOBuffer* buf, Timestamp receive_time)
 {
     bool has_more = true;
 
@@ -137,7 +137,7 @@ bool HttpParser::ParseRequest(IOBuffer* buf)
                     ok = ParseRequestLine(buf->GetReadablePtr(), crlf);
                     if (ok)
                     {
-                        //request_.SetReceiveTime(receive_time);
+                        request_.SetReceiveTime(receive_time);
                         buf->RetrieveUntil(crlf + 2);
                         state_ = PARSE_STATE_HEADER;
                     }
