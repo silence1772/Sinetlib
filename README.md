@@ -16,6 +16,11 @@ Sinetlib是一个仿照Muduo实现的基于Reactor模式的多线程网络库，
 * 使用状态机解析HTTP请求，支持HTTP长连接
 * HTTP服务器支持URL路由分发及访问静态资源，可实现RESTful架构
 
+## Envoirment
+* OS： Ubuntu 16.04
+* Complier： g++ 5.4
+* Build： CMake
+
 ## Build
     $ git clone git@github.com:silence1772/Sinetlib.git
     $ cd Sinetlib
@@ -65,6 +70,19 @@ int main()
     s.Start();
     loop.Start();
 }
+```
+可通过telnet测试上述程序，测试结果如下（左边为telnet程序，带有$号为用户输入内容，右边为服务器输出）：
+```shell
+$ telnet 127.0.0.1 8888
+Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '^]'.              
+                                            OnConnection
+$ test message
+                                            OnMessage
+$ ^]
+telnet> quit
+                                            OnClose
 ```
 
 在提供给用户设置的各个回调函数中，都有一个指向当前连接的指针，在消息到达回调中还暴露了保存接收到的消息的IOBuffer缓冲区指针。
@@ -120,7 +138,7 @@ Sinetlib内嵌了一个HTTP服务器，设计上借鉴了golang的mux包实现�
 用户可以根据需要设置路由及匹配条件，目前支持URL、请求参数、请求头及请求方法的匹配，并且可以从中提取出参数。
 一个请求必须满足所有条件才能匹配这个路由，得到它的Handler。
 
-首先要设置相应的路由处理函数,该函数由用户实现，如果要实现静态资源访问，则需使用HttpServer的文件处理函数
+首先要设置相应的路由处理函数,该函数由用户实现，如果要实现静态资源访问，则需使用HttpServer的文件处理函数,该函数会将访问映射到用户指定的路径。
 ```
 Route::SetHandler(YourHandler);
 Route::SetHandler(HttpServer::GetFileHandler("/home/mys/"));
@@ -137,7 +155,7 @@ Route::SetMethod("GET");
 Route::SetHeader("Header-Name", "Header-Value");
 Route::SetQuery("Filed", "Value");
 ```
-匹配前缀：
+匹配前缀，可通过“file_path"获取”/file/"后面的路径：
 ```
 Route::SetPrefix("/file/");
 ```
@@ -145,13 +163,6 @@ Route::SetPrefix("/file/");
 
 完整的程序使用如下,该程序有两个路由，其中第二个为静态资源服务。
 
-该程序可匹配下面两个HTTP请求样例
-
-    GET /path/myname?query=t HTTP/1.1
-    Connection: keep-alive
-
-    GET /file/test.jpg HTTP/1.1
-第二个请求对应访问位于/home/mys/test.jpg的文件
 ```c++
 #include "httpserver.h"
 
@@ -186,3 +197,57 @@ int main()
     loop.Start();
 }
 ```
+该程序可匹配下面两个HTTP请求样例，第二个请求对应访问位于/home/mys/test.jpg的文件，可通过浏览器访问127.0.0.1:8888/path/myname?query=t和127.0.0.1:8888/file/test.jpg实现下列请求
+
+    GET /path/myname?query=t HTTP/1.1
+    Connection: keep-alive
+
+    GET /file/test.jpg HTTP/1.1
+    
+用户使用时可通过HttpServer::NewRoute()创建一个新路由，并设置相应的匹配条件及处理函数。在有请求到来时会按照用户创建路由的顺序进行匹配，当有一个路由下的条件全部匹配，即可得到该路由的处理函数并执行。
+
+对于静态资源访问，需要使用Route::SetPrefix("/prefix/")设置前缀，并配合使用HttpServer::GetFileHandler(“/map/path/")设置映射路径，那么对于/prefix/my/src的访问将会被映射到/map/path/my/src
+
+成功匹配请求后即可执行对应的处理函数，这里暴露给了用户HttpRequest、map<string, string>、HttpResponse三个类，大概的使用就是从HttpRequest中取得请求的各项内容，同时可以从map中根据之前设置的key取得相应的value，比如上述程序的第一个路由就可取出‘name’的值。然后用户再把响应的内容写入HttpResponse即可。
+
+需要注意的是HttpResponse的使用，HttpResponse内有一个发送缓冲区，用户需要先设置该类的头部信息，然后执行AppendHeaderToBuffer()把这些信息写入缓冲区，然后再直接往缓冲区中写入消息的主体。
+
+HttpRequest接口如下：
+```c++
+// 获取方法头
+const char* GetMethodStr()
+// 获取HTTP版本
+Version GetVersion()
+// 获取URL
+const std::string& GetPath()
+// 获取参数
+const std::string GetQuery(const std::string& field)
+// 获取头部字段
+std::string GetHeader(const std::string& field)
+// 获取接收时间
+Timestamp GetReceiveTime()
+```
+HttpResponse接口如下：
+```c++
+// 设置短连接
+void SetCloseConnection(bool on)
+// 设置响应状态码
+void SetStatusCode(HttpStatusCode code)
+// 设置状态信息
+void SetStatusMessage(const std::string& message)
+// 添加头部字段
+void AddHeader(const std::string& field, const std::string& value)
+// 设置Content-Type
+void SetContentType(const std::string& content_type)
+// 将响应头写入到缓冲区中
+void AppendHeaderToBuffer();
+// 将消息主体写入到缓冲区中
+void AppendBodyToBuffer(std::string& body);
+```
+## TODO List
+
+## Contact
+* Mail: 603497448@qq.com
+
+## More
+to be continued
