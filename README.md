@@ -21,6 +21,15 @@ Sinetlib是一个仿照Muduo实现的基于Reactor模式的多线程网络库，
 * Complier： g++ 5.4
 * Build： CMake
 
+## Tutorial
+[C++网络编程实战项目--Sinetlib网络库（1）——概述](https://blog.csdn.net/silence1772/article/details/82916957)
+
+[C++网络编程实战项目--Sinetlib网络库（2）——I/O复用与事件分发](https://blog.csdn.net/silence1772/article/details/83307716)
+
+[C++网络编程实战项目--Sinetlib网络库（3）——事件循环与跨线程调用](https://blog.csdn.net/silence1772/article/details/83316765)
+
+[C++网络编程实战项目--Sinetlib网络库（4）——线程池和整体框架](https://blog.csdn.net/silence1772/article/details/83377906)
+
 ## Build
     
 需先安装Cmake：
