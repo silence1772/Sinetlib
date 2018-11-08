@@ -12,6 +12,8 @@ std::unordered_map<std::string, std::string> File::mime_ = {
     {"default", "text/plain"},
     {"html", "text/html"},
     {"htm", "text/html"},
+    {"css", "text/css"},
+    {"js", "text/javascript"},
     {"txt", "text/plain"},
     {"csv", "text/csv"},
     {"jpeg", "image/jpeg"},
