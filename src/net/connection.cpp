@@ -77,7 +77,10 @@ void Connection::Send(IOBuffer& buffer)
 
 void Connection::Shutdown()
 {
-    util::ShutdownWrite(conn_sockfd_);
+    if (!conn_eventbase_->IsWriting())
+    {
+        util::ShutdownWrite(conn_sockfd_);
+    }
 }
 
 // 处理可读事件

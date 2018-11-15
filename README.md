@@ -283,10 +283,12 @@ void AppendHeaderToBuffer();
 // 将消息主体写入到缓冲区中
 void AppendBodyToBuffer(std::string& body);
 ```
-## TODO List
+## Fix List
+
+* 修复对于短连接未写完数据就关闭连接的错误
 
 ## Contact
-* Mail: 603497448@qq.com
+* Mail: silence1772@qq.com
 
 ## More
 
