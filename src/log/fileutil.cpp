@@ -1,6 +1,6 @@
 #include "fileutil.h"
 #include <stdio.h>
-#include <string> // for strerror()
+#include <string.h> // for strerror()
 
 // 构造函数，打开文件同时设置缓冲区
 AppendFile::AppendFile(const std::string& file_name)
