@@ -293,6 +293,8 @@ Connection::Shutdown()没有判断当前数据是否发送完就直接关闭连�
 
 当连接总数超过1000左右时程序异常终止，检查core文件定位到fopen()打开文件失败，查看errno发现打开的文件数超过系统限制1024。重新运行进程，cd 到 /proc/进程号/fd，查看目录内容即为打开的文件描述符，发现当新连接建立时新增socket描述符，当连接断开时却不减少，最终定位到connection.cpp中析构函数没有close掉socket。
 
+* 2018-11-15 修复HTTP服务器中打开dir没有关闭导致泄漏的问题
+
 ## Contact
 * Mail: silence1772@qq.com
 

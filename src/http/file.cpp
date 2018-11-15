@@ -156,6 +156,8 @@ std::vector<File> File::ListDir()
         // 创建文件或子目录的file类
         files.push_back(File(absolute_path+"/"+dir_entry->d_name));
     }
+
+    closedir(ptr_dir);
     return files;
 }
 
