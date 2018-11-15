@@ -285,7 +285,13 @@ void AppendBodyToBuffer(std::string& body);
 ```
 ## Fix List
 
-* 修复对于短连接未写完数据就关闭连接的错误
+* 2018-11-15 修复对于短连接未写完数据就关闭连接的错误
+
+Connection::Shutdown()没有判断当前数据是否发送完就直接关闭连接，导致当数据一次不能写完而连接又被shutdown时，一直在写一个已关闭的连接，产生死循环。
+
+* 2018-11-15 修复文件句柄泄漏
+
+当连接总数超过1000左右时程序异常终止，检查core文件定位到fopen()打开文件失败，查看errno发现打开的文件数超过系统限制1024。重新运行进程，cd 到 /proc/进程号/fd，查看目录内容即为打开的文件描述符，发现当新连接建立时新增socket描述符，当连接断开时却不减少，最终定位到connection.cpp中析构函数没有close掉socket。
 
 ## Contact
 * Mail: silence1772@qq.com

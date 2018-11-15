@@ -1,12 +1,13 @@
 #include "fileutil.h"
 #include <stdio.h>
+#include <string> // for strerror()
 
 // 构造函数，打开文件同时设置缓冲区
 AppendFile::AppendFile(const std::string& file_name)
 {
-    if ((fp_ = fopen(file_name.c_str(), "ae")) == NULL)
+    if ((fp_ = fopen(file_name.c_str(), "ae")) == NULL) // 'e' for O_CLOEXEC
     {
-        fprintf(stderr, "AppendFile::AppendFile() file open false !\n");
+        printf("log file open failed: errno = %d reason = %s \n", errno, strerror(errno));
     }
     setbuffer(fp_, buffer_, sizeof(buffer_));
 }

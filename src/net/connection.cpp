@@ -18,7 +18,10 @@ Connection::Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& 
     conn_eventbase_->EnableReadEvents();
 }
 
-Connection::~Connection() {}
+Connection::~Connection()
+{
+    util::Close(conn_sockfd_);
+}
 
 // 连接建立后在分配的线程上注册事件
 void Connection::Register()
