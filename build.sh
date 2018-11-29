@@ -8,10 +8,11 @@ rm -rf ./build
 mkdir build
 # 进入该目录
 cd build
-# 因为CMakeLists.txt在该目录的上一级目录，因此路径为..，
-cmake ..
-# 加上-D选项编译Debug版本
-#cmake -DCMAKE_BUILD_TYPE=Debug ..
+# 下面二选一
+# 1 因为CMakeLists.txt在该目录的上一级目录，因此路径为..，
+#cmake ..
+# 2 加上-D选项编译Debug版本
+cmake -DCMAKE_BUILD_TYPE=Debug ..
 # 执行cmake命令生成的Makefile文件
 make
 # 安装生成的库和头文件到系统目录

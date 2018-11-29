@@ -10,7 +10,8 @@ Connection::Connection(Looper* loop, int conn_sockfd, const struct sockaddr_in& 
     conn_sockfd_(conn_sockfd),
     conn_eventbase_(new EventBase(conn_sockfd_)),
     local_addr_(local_addr),
-    peer_addr_(peer_addr)
+    peer_addr_(peer_addr),
+    context_(nullptr)
 {
     conn_eventbase_->SetReadCallback(std::bind(&Connection::HandleRead, this, std::placeholders::_1));
     conn_eventbase_->SetWriteCallback(std::bind(&Connection::HandleWrite, this));

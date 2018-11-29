@@ -36,13 +36,13 @@ void HttpServer::Start()
 void HttpServer::OnConnection(const std::shared_ptr<Connection>& conn)
 {
     // 建立解析器
-    parser_map_[conn->GetFd()] = std::make_shared<HttpParser>();
+    conn->SetContext(HttpParser());
 }
 
 void HttpServer::OnMessage(const std::shared_ptr<Connection>& conn, IOBuffer* buf, Timestamp t)
 {
     // 取出连接对应的解析器
-    std::shared_ptr<HttpParser> parser = parser_map_[conn->GetFd()];
+    HttpParser* parser = any_cast<HttpParser>(conn->GetMutableContext());
 
     // 无效请求
     if (!parser->ParseRequest(buf, t))
@@ -92,5 +92,5 @@ void HttpServer::OnRequest(const std::shared_ptr<Connection>& conn, const HttpRe
 void HttpServer::OnClose(const std::shared_ptr<Connection>& conn)
 {
     // 清理连接对应的解析器
-    parser_map_.erase(conn->GetFd());
+    //parser_map_.erase(conn->GetFd());
 }

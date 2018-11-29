@@ -3,6 +3,7 @@
 
 #include "iobuffer.h"
 #include "timestamp.h"
+#include "anyone.h"
 #include <functional>
 #include <memory>
 
@@ -43,6 +44,9 @@ public:
     const IOBuffer& GetInputBuffer() const { return input_buffer_; }
     const IOBuffer& GetOutputBuffer() const { return output_buffer_; }
     
+    void SetContext(const any& context) { context_ = context; }
+    const any& GetContext() const { return context_; }
+    any* GetMutableContext() { return &context_; }
 private:
     Looper* loop_;
 
@@ -68,6 +72,9 @@ private:
     // 输入输出缓冲区
     IOBuffer input_buffer_;
     IOBuffer output_buffer_;
+
+    // 解析上下文
+    any context_;
 };
 
 #endif // CONNNECTION_H

@@ -5,7 +5,6 @@
 #include "router.h"
 #include "filehandler.h"
 #include "timestamp.h"
-#include <unordered_map>
 
 class HttpParser;
 class HttpRequest;
@@ -37,8 +36,6 @@ private:
     Server server_;
     // 默认处理函数
     Route::Handler default_handler_;
-    // 每个连接对应一个HttpParser
-    std::unordered_map<int, std::shared_ptr<HttpParser>> parser_map_;
     // 分发路由
     Router router_;
     // 处理对文件的访问

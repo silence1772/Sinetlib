@@ -295,6 +295,10 @@ Connection::Shutdown()没有判断当前数据是否发送完就直接关闭连�
 
 * 2018-11-15 修复HTTP服务器中打开dir没有关闭导致泄漏的问题
 
+* 2018-11-29 修复多线程下unordered_map不安全的错误
+
+旧版本对于每个connection的解析器parser都是由主线程管理，存放在map里，当工作线程同时去map里去parser时就会产生错误，新版模仿muduo使用类似c++17的std::any，将parser直接嵌入到connection里，以避免出现不可重入现象
+
 ## Contact
 * Mail: silence1772@qq.com
 

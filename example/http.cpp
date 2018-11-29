@@ -19,7 +19,6 @@ int main()
 
     s.NewRoute()
     ->SetPath("/path/{name:[a-zA-Z]+}")
-    ->SetHeader("Connection", "keep-alive")
     ->SetHandler(OnHttpCallback);
     
     s.NewRoute()
