@@ -1,4 +1,5 @@
 #include "eventbase.h"
+#include "logger.h"
 
 EventBase::EventBase(int fd) : 
     fd_(fd),
@@ -17,13 +18,6 @@ void EventBase::HandleEvent()
             close_callback_();
         return;
     }
-    // 发生错误
-    if (revents_ & EPOLLERR)
-    {
-        if (error_callback_)
-            error_callback_();
-        return;
-    }
     // 客户端关闭连接
     if (revents_ & EPOLLRDHUP)
     {
@@ -31,6 +25,15 @@ void EventBase::HandleEvent()
             close_callback_();
         return;
     }
+    // 发生错误
+    if (revents_ & EPOLLERR)
+    {
+        if (error_callback_)
+            error_callback_();
+        if (close_callback_)
+            close_callback_();
+        return;
+    }    
     // 可读事件
     if (revents_ & (EPOLLIN | EPOLLPRI | EPOLLHUP))
     {

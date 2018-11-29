@@ -299,6 +299,10 @@ Connection::Shutdown()没有判断当前数据是否发送完就直接关闭连�
 
 旧版本对于每个connection的解析器parser都是由主线程管理，存放在map里，当工作线程同时去map里去parser时就会产生错误，新版模仿muduo使用类似c++17的std::any，将parser直接嵌入到connection里，以避免出现不可重入现象
 
+* 2018-11-29 修复cpu占用100%错误
+
+当连接发生EPOLLERR时未能调用关闭连接回调，由于使用LT模式导致一直产生EPOLLERR事件，陷入死循环占用cpu；在eventbase的事件分发里对EPOLLERR事件调用关闭回调即可解决
+
 ## Contact
 * Mail: silence1772@qq.com
 

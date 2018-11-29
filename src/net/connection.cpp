@@ -94,7 +94,6 @@ void Connection::HandleRead(Timestamp t)
     ssize_t n = 0;
 
     n = input_buffer_.ReadFd(conn_eventbase_->GetFd(), &saved_errno);
-   
     if (n > 0)
     {
         if (message_arrival_cb_)
