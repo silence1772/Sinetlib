@@ -79,10 +79,11 @@ void Looper::RunTask(Task&& task)
 // 添加任务
 void Looper::AddTask(Task&& task)
 {
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        task_queue_.emplace_back(std::move(task));
-    }
+    //{
+    //    std::unique_lock<std::mutex> lock(mutex_);
+    //    task_queue_.emplace_back(std::move(task));
+    //}
+    task_queue_.enqueue(std::move(task));
     if (!IsInBaseThread() || is_handle_task_)
     {
         WakeUp();
@@ -93,14 +94,19 @@ void Looper::AddTask(Task&& task)
 void Looper::HandleTask()
 {
     is_handle_task_ = true;
-    std::vector<Task> tasks;
+    //std::vector<Task> tasks;
+    //{
+    //    std::unique_lock<std::mutex> lock(mutex_);
+    //    tasks.swap(task_queue_);
+    //}
+    //for (size_t i = 0; i < tasks.size(); ++i)
+    //{
+    //    tasks[i]();
+    //}
+    Task task;
+    while (task_queue_.try_dequeue(task))
     {
-        std::unique_lock<std::mutex> lock(mutex_);
-        tasks.swap(task_queue_);
-    }
-    for (size_t i = 0; i < tasks.size(); ++i)
-    {
-        tasks[i]();
+        task();
     }
     is_handle_task_ = false;
 }

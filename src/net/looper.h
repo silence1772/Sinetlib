@@ -3,6 +3,7 @@
 
 #include "timestamp.h"
 #include "epoller.h"
+#include "concurrentqueue.h"
 #include <vector>
 #include <memory>
 #include <functional>
@@ -59,8 +60,9 @@ private:
     std::unique_ptr<TimerQueue> timer_queue_;
 
     // 任务队列以及保护该队列的互斥锁
-    std::mutex mutex_;
-    std::vector<Task> task_queue_;
+    // std::mutex mutex_;
+    // std::vector<Task> task_queue_;
+    moodycamel::ConcurrentQueue<Task> task_queue_;
 };
 
 #endif // LOOPER_H
