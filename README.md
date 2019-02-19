@@ -303,6 +303,10 @@ Connection::Shutdown()没有判断当前数据是否发送完就直接关闭连�
 
 当连接发生EPOLLERR时未能调用关闭连接回调，由于使用LT模式导致一直产生EPOLLERR事件，陷入死循环占用cpu；在eventbase的事件分发里对EPOLLERR事件调用关闭回调即可解决
 
+* 2019-02-19 使用无锁队列替换原有任务队列
+
+使用一个高性能并发队列moodycamel::ConcurrentQueue替代原有vector with mutex，经测试，在单生产者单消费者下性能提升10%-50%，多生产者情况下性能提升可达到100%-500%，并随着线程数的增多提升。
+
 ## Contact
 * Mail: silence1772@qq.com
 
